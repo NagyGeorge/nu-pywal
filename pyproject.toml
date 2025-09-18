@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pywal"
+name = "nu-pywal"
 dynamic = ["version"]
 description = "Generate and change color-schemes on the fly"
 readme = "README.md"
@@ -11,6 +11,9 @@ requires-python = ">=3.8"
 license = "MIT"
 authors = [
     {name = "Dylan Araps", email = "dylan.araps@gmail.com"},
+]
+maintainers = [
+    {name = "George Nagy", email = "george.nagy0969@gmail.com"},
 ]
 keywords = ["wal", "colorscheme", "terminal-emulators", "changing-colorschemes"]
 classifiers = [
@@ -28,9 +31,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/dylanaraps/pywal"
-Repository = "https://github.com/dylanaraps/pywal"
-Issues = "https://github.com/dylanaraps/pywal/issues"
+Homepage = "https://github.com/NagyGeorge/nu-pywal"
+Repository = "https://github.com/NagyGeorge/nu-pywal"
+Issues = "https://github.com/NagyGeorge/nu-pywal/issues"
 
 [project.scripts]
 wal = "pywal.__main__:main"
