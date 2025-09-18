@@ -1,24 +1,55 @@
 <h3 align="center"><img src="https://i.imgur.com/5WgMACe.gif" width="200px"></h3>
-<p align="center">Generate and change color-schemes on the fly.</p>
+<p align="center"><strong>nu-pywal</strong> - Generate and change color-schemes on the fly.</p>
+<p align="center"><em>A modernized fork of pywal for contemporary Linux systems</em></p>
 
 <p align="center">
-<a href="https://travis-ci.org/dylanaraps/pywal"><img src="https://travis-ci.org/dylanaraps/pywal.svg?branch=master"></a>
+<a href="https://github.com/NagyGeorge/nu-pywal/actions"><img src="https://github.com/NagyGeorge/nu-pywal/workflows/CI/badge.svg"></a>
 <a href="./LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
-<a href="https://pypi.python.org/pypi/pywal/"><img src="https://img.shields.io/pypi/v/pywal.svg"></a>
-<a href="https://www.patreon.com/dyla"><img src="https://img.shields.io/badge/donate-patreon-yellow.svg"></a>
-<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=V7QNJNKS3WYVS"><img src="https://img.shields.io/badge/donate-paypal-green.svg"></a>
-</p>
+<a href="https://github.com/NagyGeorge/nu-pywal/releases"><img src="https://img.shields.io/github/v/release/NagyGeorge/nu-pywal.svg"></a>
+<a href="https://github.com/NagyGeorge/nu-pywal"><img src="https://img.shields.io/badge/python-3.8%2B-blue.svg"></a>
+</p></p>
 
 <img src="https://i.imgur.com/HhK3LDv.jpg" alt="img" align="right" width="400px">
 
-Pywal is a tool that generates a color palette from the dominant colors in an image. It then applies the colors system-wide and on-the-fly in all of your favourite programs.
+**nu-pywal** is a modernized fork of pywal that generates color palettes from dominant colors in images and applies them system-wide on-the-fly. This fork focuses on contemporary Linux systems with enhanced Wayland support, modern terminal emulators, and updated security features.
 
-There are currently 5 supported color generation backends, each providing a different palette of colors from each image. You're bound to find an appealing color-scheme.
+## What's New in nu-pywal
 
-Pywal also supports predefined themes and has over 250 themes built-in. You can also create your own theme files to share with others.
+- 🐧 **Wayland Support**: Full integration with modern compositors (Hyprland, Sway, River, Wayfire)
+- 🖥️ **Modern Terminals**: Native support for Alacritty, WezTerm, Foot, Ghostty
+- 🔒 **Enhanced Security**: Path validation, secure subprocess calls, updated dependencies
+- 🐍 **Python 3.8+**: Modern Python features with improved performance
+- ⚡ **Better CI/CD**: Comprehensive testing across platforms and Python versions
+- 🎨 **Backward Compatible**: Works with existing pywal configurations and themes
 
-The goal of Pywal was to be as out of the way as possible. It doesn't modify any of your existing configuration files. Instead it works around them and provides tools to integrate your system as you see fit.
+There are currently 5+ supported color generation backends, each providing different palettes from images. nu-pywal maintains over 250 built-in themes while adding modern desktop environment support.
 
-Terminal emulators and TTYs have their color-schemes updated in real-time with no delay. With minimal configuration this functionality can be extended to almost anything running on your system.
+The goal remains unchanged: be as unobtrusive as possible. nu-pywal doesn't modify existing configuration files but provides enhanced tools for modern system integration.
 
-### More: \[[Installation](https://github.com/dylanaraps/pywal/wiki/Installation)] \[[Getting Started](https://github.com/dylanaraps/pywal/wiki/Getting-Started)] \[[Customization](https://github.com/dylanaraps/pywal/wiki/Customization)] \[[Wiki](https://github.com/dylanaraps/pywal/wiki)] \[[Screenshots](https://www.reddit.com/r/unixporn/search?q=wal&restrict_sr=on&sort=relevance&t=all)]
+Terminal emulators and TTYs update colors in real-time with no delay, now including modern Wayland-native terminals.
+
+## Documentation
+
+- 📦 **[Installation Guide](./INSTALLATION.md)** - Complete setup instructions for nu-pywal
+- 🚀 **[Getting Started](https://github.com/dylanaraps/pywal/wiki/Getting-Started)** - Basic usage (compatible with nu-pywal)
+- 🎨 **[Customization](https://github.com/dylanaraps/pywal/wiki/Customization)** - Advanced configuration
+- 📖 **[Original Wiki](https://github.com/dylanaraps/pywal/wiki)** - Comprehensive documentation
+- 🖼️ **[Screenshots](https://www.reddit.com/r/unixporn/search?q=wal&restrict_sr=on&sort=relevance&t=all)** - Community showcases
+- 📋 **[Changelog](./CHANGELOG.md)** - What's new in nu-pywal
+
+## Quick Start
+
+```bash
+# Install nu-pywal
+pip install --user nu-pywal
+
+# Generate colors from wallpaper
+wal -i ~/Pictures/wallpaper.jpg
+
+# Apply to supported programs
+wal -R
+```
+
+## Original Project
+
+This is a fork of the original [pywal](https://github.com/dylanaraps/pywal) by Dylan Araps. nu-pywal maintains compatibility while focusing on modern Linux system support.

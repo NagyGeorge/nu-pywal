@@ -5,7 +5,9 @@ repos:
     rev: v4.6.0
     hooks:
       - id: trailing-whitespace
+        exclude: '\.(md|rst|txt)$'
       - id: end-of-file-fixer
+        exclude: '\.(md|rst|txt)$'
       - id: check-yaml
       - id: check-toml
       - id: check-json
