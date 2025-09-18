@@ -1,12 +1,11 @@
 """Test export functions."""
+
+import os
+import shutil
 import unittest
 import unittest.mock
-import shutil
-import os
 
-from pywal import export
-from pywal import util
-
+from pywal import export, util
 
 COLORS = util.read_file_json("tests/test_files/test_file.json")
 COLORS["colors"].update(COLORS["special"])

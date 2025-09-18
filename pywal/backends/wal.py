@@ -1,6 +1,7 @@
 """
 Generate a colorscheme using imagemagick.
 """
+
 import logging
 import re
 import shutil
@@ -12,8 +13,7 @@ from .. import util
 
 def imagemagick(color_count, img, magick_command):
     """Call Imagemagick to generate a scheme."""
-    flags = ["-resize", "25%", "-colors", str(color_count),
-             "-unique-colors", "txt:-"]
+    flags = ["-resize", "25%", "-colors", str(color_count), "-unique-colors", "txt:-"]
     img += "[0]"
 
     return subprocess.check_output([*magick_command, img, *flags]).splitlines()
@@ -34,7 +34,7 @@ def has_im():
 
 def gen_colors(img):
     """Format the output from imagemagick into a list
-       of hex colors."""
+    of hex colors."""
     magick_command = has_im()
 
     for i in range(0, 20, 1):
@@ -56,7 +56,7 @@ def gen_colors(img):
 
 def adjust(colors, light):
     """Adjust the generated colors and store them in a dict that
-       we will later save in json format."""
+    we will later save in json format."""
     raw_colors = colors[:1] + colors[8:16] + colors[8:-1]
 
     # Manually adjust colors.

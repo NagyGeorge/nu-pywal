@@ -1,13 +1,15 @@
 """
 Reload programs.
 """
+
 import logging
 import os
 import shutil
 import subprocess
+import sys
 
-from .settings import CACHE_DIR, MODULE_DIR, OS
 from . import util
+from .settings import CACHE_DIR, MODULE_DIR, OS
 
 
 def tty(tty_reload):
@@ -21,8 +23,7 @@ def tty(tty_reload):
 
 def xrdb(xrdb_files=None):
     """Merge the colors into the X db so new terminals use them."""
-    xrdb_files = xrdb_files or \
-        [os.path.join(CACHE_DIR, "colors.Xresources")]
+    xrdb_files = xrdb_files or [os.path.join(CACHE_DIR, "colors.Xresources")]
 
     if shutil.which("xrdb") and OS != "Darwin":
         for file in xrdb_files:
@@ -31,15 +32,9 @@ def xrdb(xrdb_files=None):
 
 def gtk():
     """Reload GTK theme on the fly."""
-    # Here we call a Python 2 script to reload the GTK themes.
-    # This is done because the Python 3 GTK/Gdk libraries don't
-    # provide a way of doing this.
-    if shutil.which("python2"):
-        gtk_reload = os.path.join(MODULE_DIR, "scripts", "gtk_reload.py")
-        util.disown(["python2", gtk_reload])
-
-    else:
-        logging.warning("GTK2 reload support requires Python 2.")
+    # Use the modern Python 3 GTK reload script
+    gtk_reload = os.path.join(MODULE_DIR, "scripts", "gtk_reload.py")
+    util.disown(["python3", gtk_reload])
 
 
 def i3():
@@ -55,14 +50,78 @@ def bspwm():
 
 
 def kitty():
-    """ Reload kitty colors. """
-    if (shutil.which("kitty")
-            and util.get_pid("kitty")
-            and os.getenv('TERM') == 'xterm-kitty'):
-        subprocess.call([
-            "kitty", "@", "set-colors", "--all",
-            os.path.join(CACHE_DIR, "colors-kitty.conf")
-        ])
+    """Reload kitty colors."""
+    if (
+        shutil.which("kitty")
+        and util.get_pid("kitty")
+        and os.getenv("TERM") == "xterm-kitty"
+    ):
+        subprocess.run(
+            [
+                "kitty",
+                "@",
+                "set-colors",
+                "--all",
+                os.path.join(CACHE_DIR, "colors-kitty.conf"),
+            ],
+            check=False,
+        )
+
+
+def alacritty():
+    """Reload Alacritty colors."""
+    if shutil.which("alacritty") and util.get_pid("alacritty"):
+        # Alacritty doesn't support runtime color changes,
+        # but we can touch the config file to trigger a reload if watch mode is enabled
+        alacritty_config = os.path.expanduser("~/.config/alacritty/alacritty.yml")
+        if os.path.exists(alacritty_config):
+            try:
+                os.utime(alacritty_config, None)
+                logging.info("Touched Alacritty config file for reload")
+            except OSError:
+                logging.warning("Failed to touch Alacritty config file")
+
+
+def wezterm():
+    """Reload WezTerm colors."""
+    if shutil.which("wezterm") and util.get_pid("wezterm-gui"):
+        # WezTerm supports runtime color reloading via CLI
+        subprocess.run(
+            [
+                "wezterm",
+                "cli",
+                "spawn",
+                "--",
+                "sh",
+                "-c",
+                f"cat {os.path.join(CACHE_DIR, 'sequences')}",
+            ],
+            check=False,
+        )
+
+
+def foot():
+    """Reload Foot terminal colors."""
+    if shutil.which("foot") and util.get_pid("foot"):
+        # Foot supports OSC sequences for color changes
+        sequences_file = os.path.join(CACHE_DIR, "sequences")
+        if os.path.exists(sequences_file):
+            try:
+                with open(sequences_file) as f:
+                    f.read()
+                # Send sequences to all foot instances
+                subprocess.run(["pkill", "-USR1", "foot"], check=False)
+            except (OSError, subprocess.SubprocessError):
+                logging.warning("Failed to reload Foot colors")
+
+
+def ghostty():
+    """Reload Ghostty colors."""
+    if shutil.which("ghostty") and util.get_pid("ghostty"):
+        # Ghostty supports OSC sequences like most modern terminals
+        sequences_file = os.path.join(CACHE_DIR, "sequences")
+        if os.path.exists(sequences_file):
+            subprocess.run(["ghostty", "+send-osc", f"@{sequences_file}"], check=False)
 
 
 def polybar():
@@ -77,15 +136,33 @@ def sway():
         util.disown(["swaymsg", "reload"])
 
 
+def hyprland():
+    """Reload Hyprland colors."""
+    if shutil.which("hyprctl") and util.get_pid("Hyprland"):
+        util.disown(["hyprctl", "reload"])
+
+
+def river():
+    """Reload River colors."""
+    if shutil.which("riverctl") and util.get_pid("river"):
+        # River doesn't have a direct reload, but we can restart rivercarro or similar
+        util.disown(["pkill", "-USR1", "river"])
+
+
+def wayfire():
+    """Reload Wayfire colors."""
+    if shutil.which("wayfire") and util.get_pid("wayfire"):
+        util.disown(["pkill", "-USR1", "wayfire"])
+
+
 def colors(cache_dir=CACHE_DIR):
     """Reload colors. (Deprecated)"""
     sequences = os.path.join(cache_dir, "sequences")
 
-    logging.error("'wal -r' is deprecated: "
-                  "Use 'cat %s' instead.", sequences)
+    logging.error("'wal -r' is deprecated: " "Use 'cat %s' instead.", sequences)
 
     if os.path.isfile(sequences):
-        print("".join(util.read_file(sequences)), end="")
+        sys.stdout.write("".join(util.read_file(sequences)))
 
 
 def env(xrdb_file=None, tty_reload=True):
@@ -94,7 +171,14 @@ def env(xrdb_file=None, tty_reload=True):
     i3()
     bspwm()
     kitty()
+    alacritty()
+    wezterm()
+    foot()
+    ghostty()
     sway()
+    hyprland()
+    river()
+    wayfire()
     polybar()
     logging.info("Reloaded environment.")
     tty(tty_reload)

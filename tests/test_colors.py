@@ -1,4 +1,5 @@
 """Test imagemagick functions."""
+
 import unittest
 
 from pywal import colors

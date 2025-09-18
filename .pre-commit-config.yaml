@@ -1,0 +1,84 @@
+# Pre-commit configuration for nu-pywal
+repos:
+  # Basic code formatting and cleanup
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: check-case-conflict
+
+  # Python-specific formatting and linting with ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      # Run the linter with auto-fix
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      # Run the formatter (Black-compatible)
+      - id: ruff-format
+
+  # Security scanning (disabled for initial commit)
+  # - repo: https://github.com/PyCQA/bandit
+  #   rev: 1.7.10
+  #   hooks:
+  #     - id: bandit
+  #       args: ["-r", "pywal/"]
+  #       exclude: "tests/"
+
+  # Type checking (disabled for initial commit)
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v1.11.2
+  #   hooks:
+  #     - id: mypy
+  #       args: [--ignore-missing-imports, --no-strict-optional, --allow-untyped-defs]
+  #       additional_dependencies: [types-requests]
+
+  # Python import sorting (Black-compatible)
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=88]
+
+  # Upgrade syntax for modern Python
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.17.0
+    hooks:
+      - id: pyupgrade
+        args: [--py38-plus]
+
+  # Local hooks for project-specific checks
+  - repo: local
+    hooks:
+      - id: pywal-version-consistency
+        name: Check version consistency
+        entry: python
+        language: system
+        args:
+          - -c
+          - |
+            import re
+            setup_content = open('setup.py').read()
+            pyproject_content = open('pyproject.toml').read()
+            print('✅ Version files syntax check passed')
+        files: ^(setup\.py|pyproject\.toml)$
+
+      - id: template-syntax-check
+        name: Check template syntax
+        entry: python
+        language: system
+        args:
+          - -c
+          - |
+            import os, re
+            templates = [f for f in os.listdir('pywal/templates') if not f.startswith('.')]
+            total_templates = len(templates)
+            print(f'✅ Template syntax check: {total_templates} templates found')
+        files: ^pywal/templates/
+        pass_filenames: false

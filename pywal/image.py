@@ -1,15 +1,15 @@
 """
 Get the image file.
 """
+
 import logging
 import os
 import random
 import re
 import sys
 
+from . import util, wallpaper
 from .settings import CACHE_DIR
-from . import util
-from . import wallpaper
 
 
 def get_image_dir_recursive(img_dir):
@@ -37,8 +37,9 @@ def get_image_dir(img_dir):
 
     file_types = (".png", ".jpg", ".jpeg", ".jpe", ".gif")
 
-    return [img.name for img in os.scandir(img_dir)
-            if img.name.lower().endswith(file_types)], current_wall
+    return [
+        img.name for img in os.scandir(img_dir) if img.name.lower().endswith(file_types)
+    ], current_wall
 
 
 def get_random_image(img_dir, recursive):
@@ -66,8 +67,11 @@ def get_next_image(img_dir, recursive):
     else:
         images, current_wall = get_image_dir(img_dir)
 
-    images.sort(key=lambda img: [int(x) if x.isdigit() else x
-                                 for x in re.split('([0-9]+)', img)])
+    images.sort(
+        key=lambda img: [
+            int(x) if x.isdigit() else x for x in re.split("([0-9]+)", img)
+        ]
+    )
 
     try:
         next_index = images.index(current_wall) + 1

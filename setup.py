@@ -1,16 +1,25 @@
 """wal - setup.py"""
-import sys
+
+import os
+
 import setuptools
 
-try:
-    import pywal
-except ImportError:
-    print("error: pywal requires Python 3.5 or greater.")
-    sys.exit(1)
+# Check Python version first
+LONG_DESC = open("README.md").read()
 
-LONG_DESC = open('README.md').read()
-VERSION = pywal.__version__
-DOWNLOAD = "https://github.com/dylanaraps/pywal/archive/%s.tar.gz" % VERSION
+
+# Get version from __init__.py without importing the module
+def get_version():
+    version_file = os.path.join(os.path.dirname(__file__), "pywal", "settings.py")
+    with open(version_file) as f:
+        for line in f:
+            if line.startswith("__version__"):
+                return line.split('"')[1]
+    raise RuntimeError("Unable to find version string.")
+
+
+VERSION = get_version()
+DOWNLOAD = f"https://github.com/dylanaraps/pywal/archive/{VERSION}.tar.gz"
 
 setuptools.setup(
     name="pywal",
@@ -28,12 +37,16 @@ setuptools.setup(
         "Environment :: X11 Applications",
         "License :: OSI Approved :: MIT License",
         "Operating System :: POSIX :: Linux",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
     packages=["pywal"],
     entry_points={"console_scripts": ["wal=pywal.__main__:main"]},
-    python_requires=">=3.5",
+    python_requires=">=3.8",
     test_suite="tests",
     include_package_data=True,
-    zip_safe=False)
+    zip_safe=False,
+)

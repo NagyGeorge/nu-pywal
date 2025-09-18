@@ -1,9 +1,9 @@
 """Test util functions."""
-import unittest
+
 import os
+import unittest
 
 from pywal import util
-
 
 # Import colors.
 COLORS = util.read_file_json("tests/test_files/test_file.json")

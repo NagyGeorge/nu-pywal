@@ -1,13 +1,13 @@
 """
 Generate a colorscheme using Schemer2.
 """
+
 import logging
 import shutil
 import subprocess
 import sys
 
-from .. import colors
-from .. import util
+from .. import colors, util
 
 
 def gen_colors(img):
@@ -31,5 +31,5 @@ def get(img, light=False):
         logging.error("Try another backend. (wal --backend)")
         sys.exit(1)
 
-    cols = [col.decode('UTF-8') for col in gen_colors(img)]
+    cols = [col.decode("UTF-8") for col in gen_colors(img)]
     return adjust(cols, light)

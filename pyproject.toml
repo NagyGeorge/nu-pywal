@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pywal"
+dynamic = ["version"]
+description = "Generate and change color-schemes on the fly"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Dylan Araps", email = "dylan.araps@gmail.com"},
+]
+keywords = ["wal", "colorscheme", "terminal-emulators", "changing-colorschemes"]
+classifiers = [
+    "Environment :: X11 Applications",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: System :: System Shells",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/dylanaraps/pywal"
+Repository = "https://github.com/dylanaraps/pywal"
+Issues = "https://github.com/dylanaraps/pywal/issues"
+
+[project.scripts]
+wal = "pywal.__main__:main"
+
+[tool.setuptools]
+packages = ["pywal"]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {attr = "pywal.__version__"}
+
+[tool.setuptools.package-data]
+pywal = [
+    "templates/*",
+    "backends/*",
+    "scripts/*",
+    "colorschemes/*",
+    "colorschemes/light/*",
+    "colorschemes/dark/*",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "ICN", "PIE", "T20", "PT", "Q"]
+ignore = ["E501", "S101", "S603", "S607"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S108", "PT009", "PT027"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[dependency-groups]
+dev = [
+    "ruff>=0.13.0",
+]

@@ -12,7 +12,6 @@ Created by Dylan Araps.
 import os
 import platform
 
-
 __version__ = "3.3.1"
 __cache_version__ = "1.1.0"
 

@@ -1,4 +1,5 @@
 """Test image functions."""
+
 import unittest
 
 from pywal import image
@@ -6,6 +7,7 @@ from pywal import image
 
 class TestImage(unittest.TestCase):
     """Test image functions."""
+
     def test_get_img(self):
         """> Validate image file."""
         result = image.get("tests/test_files/test.jpg")

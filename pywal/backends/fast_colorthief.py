@@ -1,6 +1,7 @@
 """
 Generate a colorscheme using fast_colorthief.
 """
+
 import logging
 import sys
 
@@ -16,7 +17,7 @@ from .. import util
 
 
 def gen_colors(img):
-    """ Ask backend to generate 16 colors. """
+    """Ask backend to generate 16 colors."""
     raw_colors = fast_colorthief.get_palette(img, 16)
 
     return [util.rgb_to_hex(color) for color in raw_colors]
