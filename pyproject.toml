@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "Generate and change color-schemes on the fly"
 readme = "README.md"
 requires-python = ">=3.8"
-license = "MIT"
+license = {file = "LICENSE.md"}
 authors = [
     {name = "Dylan Araps", email = "dylan.araps@gmail.com"},
 ]
@@ -104,9 +104,13 @@ module = [
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 
+[tool.uv.sources]
+nu-pywal = { workspace = true }
+
 [dependency-groups]
 dev = [
     "bandit>=1.7.10",
     "mypy>=1.14.1",
+    "nu-pywal==0.9.1",
     "ruff>=0.13.0",
 ]
