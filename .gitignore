@@ -1,11 +1,17 @@
 dist/*
 pywal.egg-info/*
 *.pyc
-subprocess
-re
 build/*
 .coverage
 .vscode/*
 __pycache__/*
 .venv/
 .env
+
+# Cache directories
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Lock file (optional - remove if you want to commit it)
+uv.lock
