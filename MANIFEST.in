@@ -6,6 +6,5 @@ include pywal/colorschemes/light/*
 include pywal/colorschemes/dark/*
 include tests/*
 include tests/test_files/*
-include .pylintrc
 include README.md
 include LICENSE.md

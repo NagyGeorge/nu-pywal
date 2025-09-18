@@ -8,14 +8,13 @@ dynamic = ["version"]
 description = "Generate and change color-schemes on the fly"
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "Dylan Araps", email = "dylan.araps@gmail.com"},
 ]
 keywords = ["wal", "colorscheme", "terminal-emulators", "changing-colorschemes"]
 classifiers = [
     "Environment :: X11 Applications",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",

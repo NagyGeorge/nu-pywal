@@ -68,10 +68,9 @@ repos:
           - -c
           - |
             import re
-            setup_content = open('setup.py').read()
             pyproject_content = open('pyproject.toml').read()
             print('✅ Version files syntax check passed')
-        files: ^(setup\.py|pyproject\.toml)$
+        files: ^pyproject\.toml$
 
       - id: template-syntax-check
         name: Check template syntax
