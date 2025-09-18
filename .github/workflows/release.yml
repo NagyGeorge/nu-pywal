@@ -1,47 +1,50 @@
-name: Release
+# Release workflow disabled for baseline push
+# Will be re-enabled after establishing branch workflow
 
-on:
-  push:
-    tags:
-      - "v*.*.*"
+# name: Release
 
-jobs:
-  release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write  # For trusted publishing to PyPI
+# on:
+#   push:
+#     tags:
+#       - "v*.*.*"
 
-    steps:
-    - uses: actions/checkout@v4
+# jobs:
+#   release:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: write
+#       id-token: write  # For trusted publishing to PyPI
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
+#     steps:
+#     - uses: actions/checkout@v4
 
-    - name: Install build dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install build twine
+#     - name: Set up Python
+#       uses: actions/setup-python@v4
+#       with:
+#         python-version: "3.11"
 
-    - name: Build package
-      run: python -m build
+#     - name: Install build dependencies
+#       run: |
+#         python -m pip install --upgrade pip
+#         pip install build twine
 
-    - name: Check package
-      run: twine check dist/*
+#     - name: Build package
+#       run: python -m build
 
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: dist/*
-        generate_release_notes: true
-        draft: false
-        prerelease: false
+#     - name: Check package
+#       run: twine check dist/*
 
-    - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        # Using trusted publishing, no need for password
-        # Repository URL defaults to PyPI
-        verbose: true
+#     - name: Create GitHub Release
+#       uses: softprops/action-gh-release@v1
+#       with:
+#         files: dist/*
+#         generate_release_notes: true
+#         draft: false
+#         prerelease: false
+
+#     - name: Publish to PyPI
+#       uses: pypa/gh-action-pypi-publish@release/v1
+#       with:
+#         # Using trusted publishing, no need for password
+#         # Repository URL defaults to PyPI
+#         verbose: true
