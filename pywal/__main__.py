@@ -220,7 +220,7 @@ def parse_args(parser):
                 "Use -i /path/to/image, --theme theme_name, or -R to restore colors."
             )
         else:
-            parser.error("No input specified.\n" "-i, --theme, -R, or -w are required.")
+            parser.error("No input specified.\n-i, --theme, -R, or -w are required.")
 
     if args.b:
         args.b = f"#{args.b.strip('#')}"
