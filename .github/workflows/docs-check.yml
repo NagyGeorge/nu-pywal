@@ -18,6 +18,9 @@ on:
       - 'docs/**'
   workflow_dispatch:  # Allow manual trigger
 
+permissions:
+  contents: read
+
 jobs:
   docs-check:
     runs-on: ubuntu-latest
@@ -27,10 +30,10 @@ jobs:
     - name: Check documentation files exist
       run: |
         echo "✅ Documentation files detected"
-        echo "📝 Changed files in this push:"
+        echo "Changed files in this push:"
         git diff --name-only HEAD~1 HEAD | grep -E '\.(md|rst|txt)$' || true
 
     - name: Validate Markdown links (optional)
       run: |
-        echo "🔗 Markdown validation could go here"
-        echo "ℹ️  This is a lightweight check - full CI skipped for docs-only changes"
+        echo "Markdown validation could go here"
+        echo "This is a lightweight check - full CI skipped for docs-only changes"
