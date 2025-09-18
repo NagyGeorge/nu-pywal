@@ -12,7 +12,7 @@ Created by Dylan Araps.
 import os
 import platform
 
-__version__ = "0.9.0-nu"
+__version__ = "0.9.0"
 __cache_version__ = "1.1.0"
 
 

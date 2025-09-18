@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 
-## [0.9.0-nu] - 2024-09-18 - nu-pywal Fork
+## [0.9.0] - 2024-09-18 - nu-pywal Fork
 
 **Major modernization of pywal for contemporary Linux systems**
 
