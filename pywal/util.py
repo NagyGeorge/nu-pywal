@@ -336,13 +336,11 @@ def disown(cmd):
 
         # Security: Validate that the command exists
         if not cmd_list:
-            logging.error("Empty command provided")
-            return False
+            raise ExecutableNotFoundError("Empty command provided")
 
         executable = shutil.which(cmd_list[0])
         if not executable:
-            logging.error(f"Command not found: {cmd_list[0]}")
-            return False
+            raise ExecutableNotFoundError(f"Command not found: {cmd_list[0]}")
 
         # Start process in background without waiting
         subprocess.Popen(
@@ -351,8 +349,7 @@ def disown(cmd):
         return True
 
     except (subprocess.SubprocessError, OSError) as e:
-        logging.error(f"Failed to execute command {cmd_list}: {e}")
-        return False
+        raise PywalError(f"Failed to execute command {cmd_list}: {e}") from e
 
 
 def get_pid(name):
