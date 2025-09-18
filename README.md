@@ -4,6 +4,7 @@
 
 <p align="center">
 <a href="https://github.com/NagyGeorge/nu-pywal/actions"><img src="https://github.com/NagyGeorge/nu-pywal/workflows/CI/badge.svg"></a>
+<a href="https://pypi.org/project/nu-pywal/"><img src="https://img.shields.io/pypi/v/nu-pywal.svg"></a>
 <a href="./LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
 <a href="https://github.com/NagyGeorge/nu-pywal/releases"><img src="https://img.shields.io/github/v/release/NagyGeorge/nu-pywal.svg"></a>
 <a href="https://github.com/NagyGeorge/nu-pywal"><img src="https://img.shields.io/badge/python-3.8%2B-blue.svg"></a>

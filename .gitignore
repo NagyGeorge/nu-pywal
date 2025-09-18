@@ -15,3 +15,10 @@ __pycache__/*
 
 # Lock file (optional - remove if you want to commit it)
 uv.lock
+
+# AUR/makepkg build artifacts
+src/
+pkg/
+*.pkg.tar.zst
+*.pkg.tar.xz
+.SRCINFO
