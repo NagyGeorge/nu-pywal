@@ -8,6 +8,44 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 
+## [0.9.0-nu] - 2024-09-18 - nu-pywal Fork
+
+**Major modernization of pywal for contemporary Linux systems**
+
+### Added
+- **Wayland compositor support**: Hyprland, River, Wayfire, Sway
+- **Modern terminal emulator support**: Alacritty, WezTerm, Foot, Ghostty
+- **Enhanced security**: Path validation, secure subprocess calls
+- **Modern Python packaging**: pyproject.toml configuration
+- **Comprehensive CI/CD**: GitHub Actions pipeline with multi-platform testing
+- **Development workflow**: Pre-commit hooks with ruff, formatting, linting
+- **Template improvements**: Fixed VSCode template syntax
+
+### Changed
+- **Python requirement**: Minimum version 3.5 → 3.8
+- **Code formatting**: Migrated to f-strings from % formatting
+- **Import system**: Fixed Python 2 compatibility issues
+- **GTK reload script**: Complete rewrite for Python 3
+- **Desktop environment detection**: Enhanced for modern compositors
+- **Wallpaper setting**: Updated for Wayland and modern DEs
+
+### Security
+- Added path validation to prevent directory traversal attacks
+- Enhanced subprocess security with argument validation
+- Replaced shell=True subprocess calls with safer alternatives
+
+### Technical
+- Migrated from setup.py to modern pyproject.toml packaging
+- Updated code quality tools (ruff, black compatibility)
+- Fixed deprecated API usage and import warnings
+- Improved error handling and logging throughout codebase
+
+### Notes
+- This release establishes nu-pywal as a modernized fork of the original pywal
+- Maintains backward compatibility with existing color schemes and templates
+- Tested across Python 3.8-3.12 on Ubuntu and macOS
+
+
 ## [3.1.0] - 2018-06-21
 
 - Added `--saturate` to change color saturation.

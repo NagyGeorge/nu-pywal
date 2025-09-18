@@ -1,50 +1,46 @@
-# Release workflow disabled for baseline push
-# Will be re-enabled after establishing branch workflow
+name: Release
 
-# name: Release
+on:
+  push:
+    tags:
+      - "v*.*.*"
 
-# on:
-#   push:
-#     tags:
-#       - "v*.*.*"
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write  # For trusted publishing to PyPI
 
-# jobs:
-#   release:
-#     runs-on: ubuntu-latest
-#     permissions:
-#       contents: write
-#       id-token: write  # For trusted publishing to PyPI
+    steps:
+    - uses: actions/checkout@v4
 
-#     steps:
-#     - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
 
-#     - name: Set up Python
-#       uses: actions/setup-python@v4
-#       with:
-#         python-version: "3.11"
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
 
-#     - name: Install build dependencies
-#       run: |
-#         python -m pip install --upgrade pip
-#         pip install build twine
+    - name: Build package
+      run: python -m build
 
-#     - name: Build package
-#       run: python -m build
+    - name: Check package
+      run: twine check dist/*
 
-#     - name: Check package
-#       run: twine check dist/*
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/*
+        generate_release_notes: true
+        draft: false
+        prerelease: true  # Mark as prerelease since it's 0.9.0
 
-#     - name: Create GitHub Release
-#       uses: softprops/action-gh-release@v1
-#       with:
-#         files: dist/*
-#         generate_release_notes: true
-#         draft: false
-#         prerelease: false
-
-#     - name: Publish to PyPI
-#       uses: pypa/gh-action-pypi-publish@release/v1
-#       with:
-#         # Using trusted publishing, no need for password
-#         # Repository URL defaults to PyPI
-#         verbose: true
+    # Disable PyPI publishing for now - this is a fork
+    # - name: Publish to PyPI
+    #   uses: pypa/gh-action-pypi-publish@release/v1
+    #   with:
+    #     verbose: true
