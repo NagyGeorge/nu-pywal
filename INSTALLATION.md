@@ -95,7 +95,7 @@ nu-pywal includes enhanced support for modern environments:
 ### Wayland Compositors
 - **Hyprland**: Full color scheme integration
 - **Sway**: Wallpaper and color setting
-- **River**: Basic wallpaper support  
+- **River**: Basic wallpaper support
 - **Wayfire**: Color scheme updates
 
 ### X11 Desktop Environments

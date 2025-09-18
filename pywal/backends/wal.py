@@ -5,7 +5,6 @@ Generate a colorscheme using imagemagick.
 import logging
 import re
 import shutil
-import subprocess
 import sys
 
 from .. import util
@@ -16,7 +15,14 @@ def imagemagick(color_count, img, magick_command):
     flags = ["-resize", "25%", "-colors", str(color_count), "-unique-colors", "txt:-"]
     img += "[0]"
 
-    return subprocess.check_output([*magick_command, img, *flags]).splitlines()
+    try:
+        output = util.run_command(
+            [*magick_command, img, *flags], timeout=60, capture_output=True
+        )
+        return output.splitlines()
+    except util.PywalError as e:
+        logging.error(f"Imagemagick failed to generate colors: {e}")
+        sys.exit(1)
 
 
 def has_im():
@@ -27,9 +33,11 @@ def has_im():
     if shutil.which("convert"):
         return ["convert"]
 
-    logging.error("Imagemagick wasn't found on your system.")
-    logging.error("Try another backend. (wal --backend)")
-    sys.exit(1)
+    # Instead of exiting, raise an exception for graceful handling
+    raise util.ExecutableNotFoundError(
+        "Imagemagick wasn't found on your system. "
+        "Install imagemagick or try another backend with --backend"
+    )
 
 
 def gen_colors(img):

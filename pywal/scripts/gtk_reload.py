@@ -7,27 +7,34 @@ compatible with both GTK2 and GTK3/4.
 """
 
 import logging
-import subprocess
+import os
+import sys
+
+# Add parent directory to path to import util
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+from util import ExecutableNotFoundError, PywalError, run_command
 
 
 def reload_gtk_via_gsettings():
     """Reload GTK themes via gsettings (GTK3/4)."""
     try:
         # Get current theme name
-        result = subprocess.run(
-            ["gsettings", "get", "org.gnome.desktop.interface", "gtk-theme"],
-            capture_output=True,
-            text=True,
-            check=True,
+        current_theme = (
+            run_command(
+                ["gsettings", "get", "org.gnome.desktop.interface", "gtk-theme"],
+                timeout=10,
+                capture_output=True,
+            )
+            .strip()
+            .strip("'\"")
         )
-        current_theme = result.stdout.strip().strip("'\"")
 
         # Set theme to something else temporarily, then back
-        subprocess.run(
+        run_command(
             ["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", "Adwaita"],
-            check=True,
+            timeout=10,
         )
-        subprocess.run(
+        run_command(
             [
                 "gsettings",
                 "set",
@@ -35,19 +42,19 @@ def reload_gtk_via_gsettings():
                 "gtk-theme",
                 current_theme,
             ],
-            check=True,
+            timeout=10,
         )
         return True
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except (PywalError, ExecutableNotFoundError):
         return False
 
 
 def reload_gtk_via_xsettingsd():
     """Reload GTK themes via xsettingsd restart."""
     try:
-        subprocess.run(["pkill", "-HUP", "xsettingsd"], check=True)
+        run_command(["pkill", "-HUP", "xsettingsd"], timeout=5)
         return True
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except (PywalError, ExecutableNotFoundError):
         return False
 
 
@@ -55,11 +62,9 @@ def reload_gtk_via_xrdb():
     """Reload GTK themes via xrdb (fallback for older systems)."""
     try:
         # This method works by triggering a property change that GTK applications watch
-        subprocess.run(
-            ["xrdb", "-merge", "/dev/null"], check=True, stderr=subprocess.DEVNULL
-        )
+        run_command(["xrdb", "-merge", "/dev/null"], timeout=10)
         return True
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except (PywalError, ExecutableNotFoundError):
         return False
 
 

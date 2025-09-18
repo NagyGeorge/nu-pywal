@@ -5,7 +5,6 @@ Reload programs.
 import logging
 import os
 import shutil
-import subprocess
 import sys
 
 from . import util
@@ -18,16 +17,19 @@ def tty(tty_reload):
     term = os.environ.get("TERM")
 
     if tty_reload and term == "linux":
-        subprocess.Popen(["sh", tty_script])
+        util.disown(["sh", tty_script])
 
 
 def xrdb(xrdb_files=None):
     """Merge the colors into the X db so new terminals use them."""
     xrdb_files = xrdb_files or [os.path.join(CACHE_DIR, "colors.Xresources")]
 
-    if shutil.which("xrdb") and OS != "Darwin":
+    if OS != "Darwin":
         for file in xrdb_files:
-            subprocess.run(["xrdb", "-merge", "-quiet", file], check=False)
+            try:
+                util.run_command(["xrdb", "-merge", "-quiet", file], timeout=10)
+            except util.PywalError as e:
+                logging.warning(f"Failed to merge Xresources: {e}")
 
 
 def gtk():
@@ -51,21 +53,20 @@ def bspwm():
 
 def kitty():
     """Reload kitty colors."""
-    if (
-        shutil.which("kitty")
-        and util.get_pid("kitty")
-        and os.getenv("TERM") == "xterm-kitty"
-    ):
-        subprocess.run(
-            [
-                "kitty",
-                "@",
-                "set-colors",
-                "--all",
-                os.path.join(CACHE_DIR, "colors-kitty.conf"),
-            ],
-            check=False,
-        )
+    if util.get_pid("kitty") and os.getenv("TERM") == "xterm-kitty":
+        try:
+            util.run_command(
+                [
+                    "kitty",
+                    "@",
+                    "set-colors",
+                    "--all",
+                    os.path.join(CACHE_DIR, "colors-kitty.conf"),
+                ],
+                timeout=10,
+            )
+        except util.PywalError as e:
+            logging.warning(f"Failed to reload kitty colors: {e}")
 
 
 def alacritty():
@@ -84,25 +85,28 @@ def alacritty():
 
 def wezterm():
     """Reload WezTerm colors."""
-    if shutil.which("wezterm") and util.get_pid("wezterm-gui"):
+    if util.get_pid("wezterm-gui"):
         # WezTerm supports runtime color reloading via CLI
-        subprocess.run(
-            [
-                "wezterm",
-                "cli",
-                "spawn",
-                "--",
-                "sh",
-                "-c",
-                f"cat {os.path.join(CACHE_DIR, 'sequences')}",
-            ],
-            check=False,
-        )
+        try:
+            util.run_command(
+                [
+                    "wezterm",
+                    "cli",
+                    "spawn",
+                    "--",
+                    "sh",
+                    "-c",
+                    f"cat {os.path.join(CACHE_DIR, 'sequences')}",
+                ],
+                timeout=10,
+            )
+        except util.PywalError as e:
+            logging.warning(f"Failed to reload WezTerm colors: {e}")
 
 
 def foot():
     """Reload Foot terminal colors."""
-    if shutil.which("foot") and util.get_pid("foot"):
+    if util.get_pid("foot"):
         # Foot supports OSC sequences for color changes
         sequences_file = os.path.join(CACHE_DIR, "sequences")
         if os.path.exists(sequences_file):
@@ -110,18 +114,23 @@ def foot():
                 with open(sequences_file) as f:
                     f.read()
                 # Send sequences to all foot instances
-                subprocess.run(["pkill", "-USR1", "foot"], check=False)
-            except (OSError, subprocess.SubprocessError):
-                logging.warning("Failed to reload Foot colors")
+                util.run_command(["pkill", "-USR1", "foot"], timeout=5)
+            except (OSError, util.PywalError) as e:
+                logging.warning(f"Failed to reload Foot colors: {e}")
 
 
 def ghostty():
     """Reload Ghostty colors."""
-    if shutil.which("ghostty") and util.get_pid("ghostty"):
+    if util.get_pid("ghostty"):
         # Ghostty supports OSC sequences like most modern terminals
         sequences_file = os.path.join(CACHE_DIR, "sequences")
         if os.path.exists(sequences_file):
-            subprocess.run(["ghostty", "+send-osc", f"@{sequences_file}"], check=False)
+            try:
+                util.run_command(
+                    ["ghostty", "+send-osc", f"@{sequences_file}"], timeout=10
+                )
+            except util.PywalError as e:
+                logging.warning(f"Failed to reload Ghostty colors: {e}")
 
 
 def polybar():

@@ -1,0 +1,36 @@
+name: Documentation Check
+
+# Lightweight check for documentation-only changes
+on:
+  push:
+    branches: [ master, main ]
+    paths:
+      - '**.md'
+      - '**.rst'
+      - '**.txt'
+      - 'docs/**'
+  pull_request:
+    branches: [ master, main ]
+    paths:
+      - '**.md'
+      - '**.rst'
+      - '**.txt'
+      - 'docs/**'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  docs-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Check documentation files exist
+      run: |
+        echo "✅ Documentation files detected"
+        echo "📝 Changed files in this push:"
+        git diff --name-only HEAD~1 HEAD | grep -E '\.(md|rst|txt)$' || true
+
+    - name: Validate Markdown links (optional)
+      run: |
+        echo "🔗 Markdown validation could go here"
+        echo "ℹ️  This is a lightweight check - full CI skipped for docs-only changes"

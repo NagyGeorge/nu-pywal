@@ -12,16 +12,16 @@ Created by Dylan Araps.
 import os
 import platform
 
-__version__ = "0.9.0"
-__cache_version__ = "1.1.0"
+__version__: str = "0.9.0"
+__cache_version__: str = "1.1.0"
 
 
-HOME = os.getenv("HOME", os.getenv("USERPROFILE"))
-XDG_CACHE_DIR = os.getenv("XDG_CACHE_HOME", os.path.join(HOME, ".cache"))
-XDG_CONF_DIR = os.getenv("XDG_CONFIG_HOME", os.path.join(HOME, ".config"))
+HOME: str = os.getenv("HOME") or os.getenv("USERPROFILE") or os.path.expanduser("~")
+XDG_CACHE_DIR: str = os.getenv("XDG_CACHE_HOME", os.path.join(HOME, ".cache"))
+XDG_CONF_DIR: str = os.getenv("XDG_CONFIG_HOME", os.path.join(HOME, ".config"))
 
-CACHE_DIR = os.getenv("PYWAL_CACHE_DIR", os.path.join(XDG_CACHE_DIR, "wal"))
-CONF_DIR = os.path.join(XDG_CONF_DIR, "wal")
-MODULE_DIR = os.path.dirname(__file__)
+CACHE_DIR: str = os.getenv("PYWAL_CACHE_DIR", os.path.join(XDG_CACHE_DIR, "wal"))
+CONF_DIR: str = os.path.join(XDG_CONF_DIR, "wal")
+MODULE_DIR: str = os.path.dirname(__file__)
 
-OS = platform.uname()[0]
+OS: str = platform.uname()[0]

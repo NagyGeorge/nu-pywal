@@ -4,8 +4,6 @@ import ctypes
 import logging
 import os
 import re
-import shutil
-import subprocess
 import urllib.parse
 
 from . import util
@@ -69,54 +67,54 @@ def xfconf(img):
         r"(?:(?:image-path|last-image)|workspace\d/last-image)$",
         flags=re.M,
     )
-    xfconf_data = subprocess.check_output(
-        ["xfconf-query", "--channel", "xfce4-desktop", "--list"],
-        stderr=subprocess.DEVNULL,
-    ).decode("utf8")
-    paths = xfconf_re.findall(xfconf_data)
-    for path in paths:
-        util.disown(
-            [
-                "xfconf-query",
-                "--channel",
-                "xfce4-desktop",
-                "--property",
-                path,
-                "--set",
-                img,
-            ]
+    try:
+        xfconf_data = util.run_command(
+            ["xfconf-query", "--channel", "xfce4-desktop", "--list"],
+            timeout=10,
+            capture_output=True,
         )
+        paths = xfconf_re.findall(xfconf_data)
+        for path in paths:
+            util.disown(
+                [
+                    "xfconf-query",
+                    "--channel",
+                    "xfce4-desktop",
+                    "--property",
+                    path,
+                    "--set",
+                    img,
+                ]
+            )
+    except util.PywalError as e:
+        logging.error(f"Failed to set XFCE wallpaper: {e}")
 
 
 def set_wm_wallpaper(img):
     """Set the wallpaper for non desktop environments."""
-    if shutil.which("feh"):
-        util.disown(["feh", "--bg-fill", img])
+    wallpaper_setters = [
+        (["feh", "--bg-fill", img], "feh"),
+        (["xwallpaper", "--zoom", img], "xwallpaper"),
+        (["hsetroot", "-fill", img], "hsetroot"),
+        (["nitrogen", "--set-zoom-fill", img], "nitrogen"),
+        (["bgs", "-z", img], "bgs"),
+        (["habak", "-mS", img], "habak"),
+        (["display", "-backdrop", "-window", "root", img], "display"),
+    ]
 
-    elif shutil.which("xwallpaper"):
-        util.disown(["xwallpaper", "--zoom", img])
+    for cmd, setter_name in wallpaper_setters:
+        try:
+            util.disown(cmd)
+            logging.info(f"Wallpaper set using {setter_name}")
+            return
+        except util.ExecutableNotFoundError:
+            logging.debug(f"Wallpaper setter '{setter_name}' not found")
+            continue
 
-    elif shutil.which("hsetroot"):
-        util.disown(["hsetroot", "-fill", img])
-
-    elif shutil.which("nitrogen"):
-        util.disown(["nitrogen", "--set-zoom-fill", img])
-
-    elif shutil.which("bgs"):
-        util.disown(["bgs", "-z", img])
-
-    elif shutil.which("hsetroot"):
-        util.disown(["hsetroot", "-fill", img])
-
-    elif shutil.which("habak"):
-        util.disown(["habak", "-mS", img])
-
-    elif shutil.which("display"):
-        util.disown(["display", "-backdrop", "-window", "root", img])
-
-    else:
-        logging.error("No wallpaper setter found.")
-        return
+    logging.error(
+        "No wallpaper setter found. Install one of: feh, xwallpaper, hsetroot, nitrogen, bgs, habak, imagemagick"
+    )
+    return
 
 
 def set_desktop_wallpaper(desktop, img):
@@ -167,14 +165,24 @@ def set_desktop_wallpaper(desktop, img):
 
     elif "wayland" in desktop:
         # Generic Wayland fallback - try common Wayland wallpaper setters
-        if shutil.which("swaybg"):
-            util.disown(["swaybg", "-i", img, "-m", "fill"])
-        elif shutil.which("oguri"):
-            util.disown(["oguri"])
-        elif shutil.which("wpaperd"):
-            util.disown(["wpaperd"])
-        else:
-            logging.warning("No Wayland wallpaper setter found")
+        wayland_setters = [
+            (["swaybg", "-i", img, "-m", "fill"], "swaybg"),
+            (["oguri"], "oguri"),
+            (["wpaperd"], "wpaperd"),
+        ]
+
+        for cmd, setter_name in wayland_setters:
+            try:
+                util.disown(cmd)
+                logging.info(f"Wayland wallpaper set using {setter_name}")
+                return
+            except util.ExecutableNotFoundError:
+                logging.debug(f"Wayland wallpaper setter '{setter_name}' not found")
+                continue
+
+        logging.warning(
+            "No Wayland wallpaper setter found. Install swaybg, oguri, or wpaperd"
+        )
 
     elif "awesome" in desktop:
         util.disown(
@@ -209,36 +217,41 @@ def set_mac_wallpaper(img):
     db_file = "Library/Application Support/Dock/desktoppicture.db"
     db_path = os.path.join(HOME, db_file)
 
-    # Put the image path in the database
-    sql = f'insert into data values("{img}"); '
-    subprocess.run(["sqlite3", db_path, sql], check=False)
+    try:
+        # Put the image path in the database
+        sql = f'insert into data values("{img}"); '
+        util.run_command(["sqlite3", db_path, sql], timeout=10)
 
-    # Get the index of the new entry
-    sql = "select max(rowid) from data;"
-    new_entry = subprocess.check_output(["sqlite3", db_path, sql])
-    new_entry = new_entry.decode("utf8").strip("\n")
+        # Get the index of the new entry
+        sql = "select max(rowid) from data;"
+        new_entry = util.run_command(
+            ["sqlite3", db_path, sql], timeout=10, capture_output=True
+        )
+        new_entry = new_entry.strip()
 
-    # Get all picture ids (monitor/space pairs)
-    get_pics_cmd = ["sqlite3", db_path, "select rowid from pictures;"]
-    pictures = subprocess.check_output(get_pics_cmd)
-    pictures = pictures.decode("utf8").split("\n")
+        # Get all picture ids (monitor/space pairs)
+        get_pics_cmd = ["sqlite3", db_path, "select rowid from pictures;"]
+        pictures = util.run_command(get_pics_cmd, timeout=10, capture_output=True)
+        pictures = pictures.split("\n")
 
-    # Clear all existing preferences
-    sql += "delete from preferences; "
+        # Clear all existing preferences
+        sql += "delete from preferences; "
 
-    # Write all pictures to the new image
-    for pic in pictures:
-        if pic:
-            sql += "insert into preferences (key, data_id, picture_id) "
-            sql += f"values(1, {new_entry}, {pic}); "
+        # Write all pictures to the new image
+        for pic in pictures:
+            if pic:
+                sql += "insert into preferences (key, data_id, picture_id) "
+                sql += f"values(1, {new_entry}, {pic}); "
 
-    subprocess.run(["sqlite3", db_path, sql], check=False)
+        util.run_command(["sqlite3", db_path, sql], timeout=10)
 
-    # Kill the dock to fix issues with cached wallpapers.
-    # macOS caches wallpapers and if a wallpaper is set that shares
-    # the filename with a cached wallpaper, the cached wallpaper is
-    # used instead.
-    subprocess.run(["killall", "Dock"], check=False)
+        # Kill the dock to fix issues with cached wallpapers.
+        # macOS caches wallpapers and if a wallpaper is set that shares
+        # the filename with a cached wallpaper, the cached wallpaper is
+        # used instead.
+        util.run_command(["killall", "Dock"], timeout=10)
+    except util.PywalError as e:
+        logging.error(f"Failed to set macOS wallpaper: {e}")
 
 
 def set_win_wallpaper(img):

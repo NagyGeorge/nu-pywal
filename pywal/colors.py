@@ -144,15 +144,42 @@ def get(img, light=False, backend="wal", cache_dir=CACHE_DIR, sat=""):
 
         # Dynamically import the backend we want to use.
         # This keeps the dependencies "optional".
-        try:
-            __import__(f"pywal.backends.{backend}")
-        except ImportError:
-            __import__("pywal.backends.wal")
-            backend = "wal"
+        fallback_backends = [
+            "wal",
+            "colorthief",
+            "fast_colorthief",
+            "haishoku",
+            "colorz",
+        ]
+        original_backend = backend
+        backend_module = None
 
-        logging.info("Using %s backend.", backend)
-        backend = sys.modules[f"pywal.backends.{backend}"]
-        colors = backend.get(img, light)
+        for backend_name in [backend] + [b for b in fallback_backends if b != backend]:
+            try:
+                __import__(f"pywal.backends.{backend_name}")
+                backend_module = sys.modules[f"pywal.backends.{backend_name}"]
+
+                # Test if the backend can actually run
+                if hasattr(backend_module, "get"):
+                    colors = backend_module.get(img, light)
+                    backend = backend_name
+                    break
+
+            except (ImportError, util.ExecutableNotFoundError, util.PywalError) as e:
+                if backend_name == original_backend:
+                    logging.warning(f"Backend '{backend_name}' failed: {e}")
+                else:
+                    logging.debug(f"Fallback backend '{backend_name}' failed: {e}")
+                continue
+
+        if backend_module is None or "colors" not in locals():
+            logging.error("All backends failed. Please install required dependencies.")
+            sys.exit(1)
+
+        if backend != original_backend:
+            logging.info(f"Fell back from '{original_backend}' to '{backend}' backend.")
+        else:
+            logging.info("Using %s backend.", backend)
         colors = colors_to_dict(saturate_colors(colors, sat), img)
 
         util.save_file_json(colors, cache_file)

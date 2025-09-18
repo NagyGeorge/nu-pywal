@@ -1,0 +1,19 @@
+# Bandit configuration for nu-pywal
+# This tool inherently requires subprocess calls for system integration
+
+exclude_dirs:
+  - tests
+  - .venv
+  - build
+  - dist
+
+# Skip these checks that are false positives for a system theming tool
+skips:
+  - B404  # subprocess import - required for system integration
+  - B603  # subprocess without shell=True - actually safer
+  - B607  # partial executable paths - we validate these exist
+
+# Only report medium/high severity issues
+# Low severity subprocess warnings are expected for this tool
+confidence: MEDIUM,HIGH
+severity: MEDIUM,HIGH

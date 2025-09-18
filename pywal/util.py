@@ -11,6 +11,24 @@ import re
 import shutil
 import subprocess
 import sys
+from typing import List, Optional, Union
+
+
+# Custom Exceptions for better error handling
+class PywalError(Exception):
+    """Base exception for nu-pywal specific errors."""
+
+
+class ExecutableNotFoundError(PywalError):
+    """Raised when a required system executable is not found."""
+
+
+class SubprocessTimeoutError(PywalError):
+    """Raised when a subprocess operation times out."""
+
+
+class InvalidPathError(PywalError):
+    """Raised when a file path is invalid or unsafe."""
 
 
 class Color:
@@ -234,34 +252,111 @@ def rgb_to_yiq(color):
     return colorsys.rgb_to_yiq(*hex_to_rgb(color))
 
 
-def disown(cmd):
-    """Call a system command in the background,
-    disown it and hide it's output."""
+def run_command(
+    cmd: Union[str, List[str]],
+    timeout: Optional[int] = 30,
+    capture_output: bool = False,
+) -> Union[bool, str]:
+    """Securely run a system command with validation and timeout.
+
+    Args:
+        cmd: Command to run (string or list)
+        timeout: Maximum execution time in seconds (default: 30)
+        capture_output: Whether to capture and return stdout (default: False)
+
+    Returns:
+        bool: True if successful (when capture_output=False)
+        str: Command output (when capture_output=True)
+
+    Raises:
+        ExecutableNotFoundError: If command executable is not found
+        SubprocessTimeoutError: If command times out
+        PywalError: For other subprocess errors
+    """
     # Security: Ensure cmd is a list to prevent shell injection
     if isinstance(cmd, str):
         logging.warning("Command passed as string, converting to list for security")
-        cmd = cmd.split()
+        cmd_list = cmd.split()
+    else:
+        cmd_list = cmd[:]
 
     # Security: Validate that the command exists
-    if not cmd or not shutil.which(cmd[0]):
-        logging.error(f"Command not found: {cmd[0] if cmd else 'empty command'}")
-        return False
+    if not cmd_list:
+        raise ExecutableNotFoundError("Empty command provided")
+
+    executable = shutil.which(cmd_list[0])
+    if not executable:
+        raise ExecutableNotFoundError(f"Command not found: {cmd_list[0]}")
 
     try:
+        if capture_output:
+            result = subprocess.run(
+                cmd_list,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                shell=False,  # Explicitly disable shell
+                check=True,
+            )
+            return result.stdout.strip()
+        else:
+            subprocess.run(
+                cmd_list,
+                timeout=timeout,
+                shell=False,  # Explicitly disable shell
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            return True
+
+    except subprocess.TimeoutExpired as e:
+        raise SubprocessTimeoutError(
+            f"Command timed out after {timeout}s: {cmd_list}"
+        ) from e
+    except subprocess.CalledProcessError as e:
+        raise PywalError(
+            f"Command failed with exit code {e.returncode}: {cmd_list}"
+        ) from e
+    except (subprocess.SubprocessError, OSError) as e:
+        raise PywalError(f"Failed to execute command {cmd_list}: {e}") from e
+
+
+def disown(cmd):
+    """Call a system command in the background,
+    disown it and hide it's output."""
+    try:
+        # Use the new secure command runner for validation
+        # Security: Ensure cmd is a list to prevent shell injection
+        if isinstance(cmd, str):
+            logging.warning("Command passed as string, converting to list for security")
+            cmd_list = cmd.split()
+        else:
+            cmd_list = cmd[:]
+
+        # Security: Validate that the command exists
+        if not cmd_list:
+            logging.error("Empty command provided")
+            return False
+
+        executable = shutil.which(cmd_list[0])
+        if not executable:
+            logging.error(f"Command not found: {cmd_list[0]}")
+            return False
+
+        # Start process in background without waiting
         subprocess.Popen(
-            cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=False
+            cmd_list, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=False
         )  # Explicitly disable shell
         return True
+
     except (subprocess.SubprocessError, OSError) as e:
-        logging.error(f"Failed to execute command {cmd}: {e}")
+        logging.error(f"Failed to execute command {cmd_list}: {e}")
         return False
 
 
 def get_pid(name):
     """Check if process is running by name."""
-    if not shutil.which("pidof"):
-        return False
-
     # Security: Validate process name to prevent injection
     if not re.match(r"^[a-zA-Z0-9_\-\.]+$", name):
         logging.warning(f"Invalid process name: {name}")
@@ -269,11 +364,9 @@ def get_pid(name):
 
     try:
         if platform.system() != "Darwin":
-            subprocess.check_output(["pidof", "-s", name], stderr=subprocess.DEVNULL)
+            run_command(["pidof", "-s", name], timeout=5)
         else:
-            subprocess.check_output(["pidof", name], stderr=subprocess.DEVNULL)
-
-    except subprocess.CalledProcessError:
+            run_command(["pidof", name], timeout=5)
+        return True
+    except (ExecutableNotFoundError, PywalError):
         return False
-
-    return True
