@@ -159,7 +159,7 @@ def colors(cache_dir=CACHE_DIR):
     """Reload colors. (Deprecated)"""
     sequences = os.path.join(cache_dir, "sequences")
 
-    logging.error("'wal -r' is deprecated: " "Use 'cat %s' instead.", sequences)
+    logging.error("'wal -r' is deprecated: Use 'cat %s' instead.", sequences)
 
     if os.path.isfile(sequences):
         sys.stdout.write("".join(util.read_file(sequences)))

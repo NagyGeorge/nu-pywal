@@ -167,9 +167,7 @@ def parse_args_exit(parser):
         sys.exit(0)
 
     if not args.i and not args.theme and not args.R and not args.w and not args.backend:
-        parser.error(
-            "No input specified.\n" "--backend, --theme, -i or -R are required."
-        )
+        parser.error("No input specified.\n--backend, --theme, -i or -R are required.")
 
     if args.theme == "list_themes":
         theme.list_out()

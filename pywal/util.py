@@ -168,9 +168,7 @@ def create_dir(directory):
 def setup_logging():
     """Logging config."""
     logging.basicConfig(
-        format=(
-            "[%(levelname)s\033[0m] " "\033[1;31m%(module)s\033[0m: " "%(message)s"
-        ),
+        format=("[%(levelname)s\033[0m] \033[1;31m%(module)s\033[0m: %(message)s"),
         level=logging.INFO,
         stream=sys.stdout,
     )
