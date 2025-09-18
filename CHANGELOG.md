@@ -8,6 +8,47 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 
+## [0.9.1] - 2024-09-18 - PyPI Publication Ready
+
+**Enhanced security, robustness, and PyPI publication readiness**
+
+### Added
+- **PyPI publication workflow**: Automated publishing via GitHub Actions
+- **Enhanced security utilities**: Secure subprocess handling with timeouts
+- **Robust fallback systems**: Backend and wallpaper setter fallbacks
+- **Custom exception hierarchy**: Better error handling with specific exception types
+- **Ghostty terminal template**: Added support for Ghostty terminal
+
+### Changed
+- **Package name**: Renamed from "pywal" to "nu-pywal" for PyPI uniqueness
+- **Repository URLs**: Updated to point to NagyGeorge/nu-pywal
+- **Maintainer information**: Added George Nagy as maintainer
+- **License format**: Updated to modern SPDX expression format
+- **Error handling**: Improved graceful degradation for missing dependencies
+
+### Security
+- **Executable validation**: All commands validated with shutil.which()
+- **Timeout protection**: Added configurable timeouts to all subprocess calls
+- **Exception standardization**: Consistent error handling across all modules
+- **Shell injection prevention**: Enhanced subprocess security measures
+
+### Fixed
+- **Disown function**: Now properly raises exceptions for missing commands
+- **MANIFEST.in**: Removed references to deleted configuration files
+- **Pre-commit hooks**: Fixed version consistency check after removing setup.py
+
+### Technical
+- **Build system**: Clean package builds without warnings
+- **Quality tools**: All linting and security checks pass
+- **Documentation**: Updated for PyPI publication process
+- **Testing**: Verified functionality and fallback mechanisms
+
+### Notes
+- Package is now ready for PyPI publication as "nu-pywal"
+- Maintains full backward compatibility with existing installations
+- Enhanced robustness ensures functionality even with missing system tools
+
+
 ## [0.9.0] - 2024-09-18 - nu-pywal Fork
 
 **Major modernization of pywal for contemporary Linux systems**
