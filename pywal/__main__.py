@@ -191,6 +191,9 @@ def parse_args(parser):
     if args.a:
         util.Color.alpha_num = args.a
 
+    # Initialize colors_plain to track if we have valid input
+    colors_plain = None
+
     if args.i:
         image_file = image.get(
             args.i, iterative=args.iterative, recursive=args.recursive
@@ -208,6 +211,16 @@ def parse_args(parser):
         colors_plain = colors.get(
             cached_wallpaper[0], args.l, args.backend, sat=args.saturate
         )
+
+    # Check if we have valid input to work with
+    if colors_plain is None:
+        if args.backend and args.backend != "list_backends":
+            parser.error(
+                f"Backend '{args.backend}' specified but no input provided.\n"
+                "Use -i /path/to/image, --theme theme_name, or -R to restore colors."
+            )
+        else:
+            parser.error("No input specified.\n" "-i, --theme, -R, or -w are required.")
 
     if args.b:
         args.b = f"#{args.b.strip('#')}"
