@@ -1,5 +1,5 @@
-{
-    "editor.tokenColorCustomizations": {
+{{
+    "editor.tokenColorCustomizations": {{
        "functions":    "{color1}",
         "keywords":     "{color2}",
         "numbers":      "{color3}",
@@ -7,8 +7,8 @@
         "types":        "{color5}",
         "variables":    "{color6}",
         "comments":     "{color8}"
-    },
-    "workbench.colorCustomizations": {
+    }},
+    "workbench.colorCustomizations": {{
         "editor.background": "{background}"
-    }
-}
+    }}
+}}
