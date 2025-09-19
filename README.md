@@ -14,6 +14,8 @@
 
 **nu-pywal** is a modernized fork of pywal that generates color palettes from dominant colors in images and applies them system-wide on-the-fly. This fork focuses on contemporary Linux systems with enhanced Wayland support, modern terminal emulators, and updated security features.
 
+<br clear="right">
+
 ## What's New in nu-pywal
 
 - 🐧 **Wayland Support**: Full integration with modern compositors (Hyprland, Sway, River, Wayfire)
