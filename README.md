@@ -49,8 +49,6 @@ pip install --user nu-pywal
 # Generate colors from wallpaper
 wal -i ~/Pictures/wallpaper.jpg
 
-# Apply to supported programs
-wal -R
 ```
 
 ## Original Project
