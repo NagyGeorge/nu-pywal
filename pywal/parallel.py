@@ -496,11 +496,11 @@ def benchmark_backends(
                 backend_results["times"].append(execution_time)
                 backend_results["success_count"] += 1
                 logging.debug(
-                    f"Backend {backend} iteration {i+1}: {execution_time:.3f}s"
+                    f"Backend {backend} iteration {i + 1}: {execution_time:.3f}s"
                 )
             except Exception as e:
                 backend_results["error_count"] += 1
-                logging.debug(f"Backend {backend} iteration {i+1} failed: {e}")
+                logging.debug(f"Backend {backend} iteration {i + 1} failed: {e}")
 
         if backend_results["times"]:
             backend_results["avg_time"] = sum(backend_results["times"]) / len(

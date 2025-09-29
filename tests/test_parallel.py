@@ -106,7 +106,7 @@ class TestParallelColorProcessor(unittest.TestCase):
         """> Test image quality score calculation."""
         good_scheme = {
             "colors": {
-                f"color{i}": f"#{i*15:02x}{i*10:02x}{i*5:02x}" for i in range(16)
+                f"color{i}": f"#{i * 15:02x}{i * 10:02x}{i * 5:02x}" for i in range(16)
             },
             "special": {"background": "#000000", "foreground": "#FFFFFF"},
         }

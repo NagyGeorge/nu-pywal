@@ -351,7 +351,7 @@ class AdvancedCache:
 
                 self.stats.cleanup_count += cleanup_count
                 logging.info(
-                    f"Cache cleanup: removed {cleanup_count} entries, freed {size_freed/1024/1024:.1f}MB"
+                    f"Cache cleanup: removed {cleanup_count} entries, freed {size_freed / 1024 / 1024:.1f}MB"
                 )
 
         except sqlite3.Error as e:
