@@ -7,12 +7,13 @@ import os
 import random
 import re
 import sys
+from typing import List, Tuple
 
 from . import util, wallpaper
 from .settings import CACHE_DIR
 
 
-def get_image_dir_recursive(img_dir):
+def get_image_dir_recursive(img_dir: str) -> Tuple[List[str], str]:
     """Get all images in a directory recursively."""
     current_wall = wallpaper.get()
     current_wall = os.path.basename(current_wall)
@@ -30,7 +31,7 @@ def get_image_dir_recursive(img_dir):
     return images, current_wall
 
 
-def get_image_dir(img_dir):
+def get_image_dir(img_dir: str) -> Tuple[List[str], str]:
     """Get all images in a directory."""
     current_wall = wallpaper.get()
     current_wall = os.path.basename(current_wall)
@@ -42,7 +43,7 @@ def get_image_dir(img_dir):
     ], current_wall
 
 
-def get_random_image(img_dir, recursive):
+def get_random_image(img_dir: str, recursive: bool) -> str:
     """Pick a random image file from a directory."""
     if recursive:
         images, current_wall = get_image_dir_recursive(img_dir)
@@ -60,7 +61,7 @@ def get_random_image(img_dir, recursive):
     return os.path.join(img_dir if not recursive else "", images[0])
 
 
-def get_next_image(img_dir, recursive):
+def get_next_image(img_dir: str, recursive: bool) -> str:
     """Get the next image in a dir."""
     if recursive:
         images, current_wall = get_image_dir_recursive(img_dir)
@@ -88,7 +89,12 @@ def get_next_image(img_dir, recursive):
     return os.path.join(img_dir if not recursive else "", image)
 
 
-def get(img, cache_dir=CACHE_DIR, iterative=False, recursive=False):
+def get(
+    img: str,
+    cache_dir: str = CACHE_DIR,
+    iterative: bool = False,
+    recursive: bool = False,
+) -> str:
     """Validate image input."""
     if os.path.isfile(img):
         wal_img = img

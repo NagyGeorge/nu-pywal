@@ -7,12 +7,13 @@ import os
 import random
 import re
 import sys
+from typing import Any, Dict, List, Optional
 
-from . import theme, util
+from . import cache, theme, util
 from .settings import CACHE_DIR, MODULE_DIR, __cache_version__
 
 
-def list_backends():
+def list_backends() -> List[str]:
     """List color backends."""
     return [
         b.name.replace(".py", "")
@@ -21,7 +22,7 @@ def list_backends():
     ]
 
 
-def normalize_img_path(img: str):
+def normalize_img_path(img: str) -> str:
     """Normalizes the image path for output."""
     if os.name == "nt":
         # On Windows, the JSON.dump ends up outputting un-escaped backslash breaking
@@ -31,7 +32,7 @@ def normalize_img_path(img: str):
     return img
 
 
-def colors_to_dict(colors, img):
+def colors_to_dict(colors: List[str], img: str) -> Dict[str, Any]:
     """Convert list of colors to pywal format."""
     return {
         "wallpaper": normalize_img_path(img),
@@ -62,7 +63,7 @@ def colors_to_dict(colors, img):
     }
 
 
-def generic_adjust(colors, light):
+def generic_adjust(colors: List[str], light: bool) -> List[str]:
     """Generic color adjustment for themers."""
     if light:
         for color in colors:
@@ -83,7 +84,7 @@ def generic_adjust(colors, light):
     return colors
 
 
-def saturate_colors(colors, amount):
+def saturate_colors(colors: List[str], amount: Optional[str]) -> List[str]:
     """Saturate all colors."""
     if amount and float(amount) <= 1.0:
         for i, _ in enumerate(colors):
@@ -93,7 +94,9 @@ def saturate_colors(colors, amount):
     return colors
 
 
-def cache_fname(img, backend, light, cache_dir, sat=""):
+def cache_fname(
+    img: str, backend: str, light: bool, cache_dir: str, sat: str = ""
+) -> List[str]:
     """Create the cache file name."""
     color_type = "light" if light else "dark"
     file_name = re.sub("[/|\\|.]", "_", img)
@@ -103,7 +106,7 @@ def cache_fname(img, backend, light, cache_dir, sat=""):
     return [cache_dir, "schemes", "{}_{}_{}_{}_{}_{}.json".format(*file_parts)]
 
 
-def get_backend(backend):
+def get_backend(backend: str) -> str:
     """Figure out which backend to use."""
     if backend == "random":
         backends = list_backends()
@@ -113,81 +116,100 @@ def get_backend(backend):
     return backend
 
 
-def palette():
+def palette() -> None:
     """Generate a palette from the colors."""
     for i in range(16):
         if i % 8 == 0:
             sys.stdout.write("\n")
 
         if i > 7:
-            i = f"8;5;{i}"
+            color_code = f"8;5;{i}"
+        else:
+            color_code = str(i)
 
-        sys.stdout.write(f"\033[4{i}m{' ' * (80 // 20)}\033[0m")
+        sys.stdout.write(f"\033[4{color_code}m{' ' * (80 // 20)}\033[0m")
 
     sys.stdout.write("\n\n")
 
 
-def get(img, light=False, backend="wal", cache_dir=CACHE_DIR, sat=""):
+def get(
+    img: str,
+    light: bool = False,
+    backend: str = "wal",
+    cache_dir: str = CACHE_DIR,
+    sat: str = "",
+) -> Dict[str, Any]:
     """Generate a palette."""
-    # home_dylan_img_jpg_backend_1.2.2.json
+    # Try advanced cache first
+    cached_colors = cache.cache_get(img, backend, light, sat)
+    if cached_colors:
+        cached_colors["alpha"] = util.Color.alpha_num
+        return cached_colors
+
+    # Fallback to old cache system for compatibility
     cache_name = cache_fname(img, backend, light, cache_dir, sat)
     cache_file = os.path.join(*cache_name)
 
     if os.path.isfile(cache_file):
         colors = theme.file(cache_file)
         colors["alpha"] = util.Color.alpha_num
-        logging.info("Found cached colorscheme.")
+        logging.info("Found legacy cached colorscheme.")
+        # Migrate to new cache system
+        cache.cache_put(img, backend, light, colors, sat)
+        return colors
 
+    # Generate new colors
+    logging.info("Generating a colorscheme.")
+    backend = get_backend(backend)
+
+    # Dynamically import the backend we want to use.
+    # This keeps the dependencies "optional".
+    fallback_backends = [
+        "wal",
+        "colorthief",
+        "fast_colorthief",
+        "haishoku",
+        "colorz",
+    ]
+    original_backend = backend
+    backend_module = None
+
+    for backend_name in [backend] + [b for b in fallback_backends if b != backend]:
+        try:
+            __import__(f"pywal.backends.{backend_name}")
+            backend_module = sys.modules[f"pywal.backends.{backend_name}"]
+
+            # Test if the backend can actually run
+            if hasattr(backend_module, "get"):
+                colors = backend_module.get(img, light)
+                backend = backend_name
+                break
+
+        except (ImportError, util.ExecutableNotFoundError, util.PywalError) as e:
+            if backend_name == original_backend:
+                logging.warning(f"Backend '{backend_name}' failed: {e}")
+            else:
+                logging.debug(f"Fallback backend '{backend_name}' failed: {e}")
+            continue
+
+    if backend_module is None or "colors" not in locals():
+        logging.error("All backends failed. Please install required dependencies.")
+        sys.exit(1)
+
+    if backend != original_backend:
+        logging.info(f"Fell back from '{original_backend}' to '{backend}' backend.")
     else:
-        logging.info("Generating a colorscheme.")
-        backend = get_backend(backend)
+        logging.info("Using %s backend.", backend)
+    colors = colors_to_dict(saturate_colors(colors, sat), img)
 
-        # Dynamically import the backend we want to use.
-        # This keeps the dependencies "optional".
-        fallback_backends = [
-            "wal",
-            "colorthief",
-            "fast_colorthief",
-            "haishoku",
-            "colorz",
-        ]
-        original_backend = backend
-        backend_module = None
-
-        for backend_name in [backend] + [b for b in fallback_backends if b != backend]:
-            try:
-                __import__(f"pywal.backends.{backend_name}")
-                backend_module = sys.modules[f"pywal.backends.{backend_name}"]
-
-                # Test if the backend can actually run
-                if hasattr(backend_module, "get"):
-                    colors = backend_module.get(img, light)
-                    backend = backend_name
-                    break
-
-            except (ImportError, util.ExecutableNotFoundError, util.PywalError) as e:
-                if backend_name == original_backend:
-                    logging.warning(f"Backend '{backend_name}' failed: {e}")
-                else:
-                    logging.debug(f"Fallback backend '{backend_name}' failed: {e}")
-                continue
-
-        if backend_module is None or "colors" not in locals():
-            logging.error("All backends failed. Please install required dependencies.")
-            sys.exit(1)
-
-        if backend != original_backend:
-            logging.info(f"Fell back from '{original_backend}' to '{backend}' backend.")
-        else:
-            logging.info("Using %s backend.", backend)
-        colors = colors_to_dict(saturate_colors(colors, sat), img)
-
-        util.save_file_json(colors, cache_file)
-        logging.info("Generation complete.")
+    # Store in both cache systems for compatibility
+    util.save_file_json(colors, cache_file)
+    cache.cache_put(img, backend, light, colors, sat)
+    logging.info("Generation complete.")
 
     return colors
 
 
-def file(input_file):
+def file(input_file: str) -> Dict[str, Any]:
     """Deprecated: symbolic link to --> theme.file"""
     return theme.file(input_file)

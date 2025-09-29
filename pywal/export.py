@@ -5,12 +5,15 @@ Export colors in various formats.
 import logging
 import os
 import re
+from typing import Any, Dict, Optional
 
 from . import util
 from .settings import CACHE_DIR, CONF_DIR, MODULE_DIR
 
 
-def template(colors, input_file, output_file=None):
+def template(
+    colors: Dict[str, Any], input_file: str, output_file: Optional[str] = None
+) -> None:
     """Read template file, substitute markers and
     save the file elsewhere."""
     # pylint: disable-msg=too-many-locals
@@ -69,10 +72,11 @@ def template(colors, input_file, output_file=None):
     except (ValueError, KeyError, AttributeError) as exc:
         logging.error("Syntax error in template file '%s': %r.", input_file, exc)
         return
-    util.save_file(template_data, output_file)
+    if output_file:
+        util.save_file(template_data, output_file)
 
 
-def flatten_colors(colors):
+def flatten_colors(colors: Dict[str, Any]) -> Dict[str, util.Color]:
     """Prepare colors to be exported.
     Flatten dicts and convert colors to util.Color()"""
     all_colors = {
@@ -84,7 +88,7 @@ def flatten_colors(colors):
     return {k: util.Color(v) for k, v in all_colors.items()}
 
 
-def get_export_type(export_type):
+def get_export_type(export_type: str) -> str:
     """Convert template type to the right filename."""
     return {
         "css": "colors.css",
@@ -117,7 +121,7 @@ def get_export_type(export_type):
     }.get(export_type, export_type)
 
 
-def every(colors, output_dir=CACHE_DIR):
+def every(colors: Dict[str, Any], output_dir: str = CACHE_DIR) -> None:
     """Export all template files."""
     colors = flatten_colors(colors)
     template_dir = os.path.join(MODULE_DIR, "templates")
@@ -133,7 +137,9 @@ def every(colors, output_dir=CACHE_DIR):
     logging.info("Exported all user files.")
 
 
-def color(colors, export_type, output_file=None):
+def color(
+    colors: Dict[str, Any], export_type: str, output_file: Optional[str] = None
+) -> None:
     """Export a single template file."""
     all_colors = flatten_colors(colors)
 

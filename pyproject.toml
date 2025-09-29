@@ -96,8 +96,7 @@ platform = "linux"
 # Per-module configuration for gradual adoption
 [[tool.mypy.overrides]]
 module = [
-    "pywal.util",
-    "pywal.colors",
+    "pywal.image",
     "pywal.settings"
 ]
 # These core modules should have better typing
@@ -112,5 +111,6 @@ dev = [
     "bandit>=1.7.10",
     "mypy>=1.14.1",
     "nu-pywal==0.9.1",
+    "pytest>=8.3.5",
     "ruff>=0.13.0",
 ]

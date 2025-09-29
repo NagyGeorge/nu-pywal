@@ -130,6 +130,68 @@ printf "%b" "\033]11;#ff0000\007"
 printf "%b" "\033]11;#000000\007"  # Reset to black
 ```
 
+## Application Integration
+
+nu-pywal supports over 30 applications and tools through template files. While terminal emulators update automatically, some applications require manual configuration.
+
+### Waybar (Wayland Status Bar)
+
+Waybar requires manual CSS import setup but provides full color scheme integration:
+
+#### Setup Steps
+
+1. **Add import to waybar CSS**: Edit your `~/.config/waybar/style.css` and add this line at the very top:
+
+```css
+@import url("file:///home/USERNAME/.cache/wal/colors-waybar.css");
+```
+
+Replace `USERNAME` with your actual username, or use the full path: `file://$HOME/.cache/wal/colors-waybar.css`
+
+2. **Use color variables in your CSS**: Replace hardcoded colors with pywal variables:
+
+```css
+/* Instead of hardcoded colors: */
+#clock { background: #ABE9B3; }
+
+/* Use pywal variables: */
+#clock { background: @color2; }
+```
+
+#### Available Color Variables
+
+- `@foreground` - Primary text color
+- `@background` - Primary background color
+- `@cursor` - Cursor color
+- `@color0` through `@color15` - The 16 terminal colors
+- Use `alpha(@background, 0.5)` for transparency
+
+#### Applying Changes
+
+After running `wal -i image.jpg`, restart waybar to apply new colors:
+
+```bash
+pkill waybar && waybar &
+```
+
+### Auto-Reload Applications
+
+These applications update colors automatically when running `wal -i`:
+
+- **Terminal Emulators**: Alacritty, WezTerm, Foot, Ghostty, Kitty
+- **Window Managers**: i3, bspwm, Sway, Hyprland
+- **Status Bars**: Polybar
+- **System**: GTK themes, X resources
+
+### Manual Integration Applications
+
+These require restart or manual configuration:
+
+- **Waybar**: CSS import (documented above)
+- **Rofi**: Uses generated theme files
+- **Firefox**: Browser theme extensions
+- **VSCode**: Color theme extensions
+
 ## Optional Backend Support
 
 Install additional color extraction backends:

@@ -158,6 +158,14 @@ def river():
         util.disown(["pkill", "-USR1", "river"])
 
 
+def waybar():
+    """Reload waybar colors."""
+    # Waybar doesn't support runtime color reloading via signals
+    # The colors-waybar.css file is generated for manual inclusion in waybar config
+    # Users should add this line at the top of their waybar style.css:
+    # @import url("file://$HOME/.cache/wal/colors-waybar.css");
+
+
 def wayfire():
     """Reload Wayfire colors."""
     if shutil.which("wayfire") and util.get_pid("wayfire"):
@@ -188,6 +196,7 @@ def env(xrdb_file=None, tty_reload=True):
     hyprland()
     river()
     wayfire()
+    waybar()
     polybar()
     logging.info("Reloaded environment.")
     tty(tty_reload)

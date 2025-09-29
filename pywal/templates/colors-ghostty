@@ -1,0 +1,43 @@
+# Ghostty terminal color scheme
+
+# Background and foreground colors
+background = {background.strip}
+foreground = {foreground.strip}
+
+# Cursor colors
+cursor-color = {foreground.strip}
+cursor-text = {background.strip}
+
+# Selection colors
+selection-background = {foreground.strip}
+selection-foreground = {background.strip}
+
+# Normal colors (0-7)
+palette = 0={color0.strip}
+palette = 1={color1.strip}
+palette = 2={color2.strip}
+palette = 3={color3.strip}
+palette = 4={color4.strip}
+palette = 5={color5.strip}
+palette = 6={color6.strip}
+palette = 7={color7.strip}
+
+# Bright colors (8-15)
+palette = 8={color8.strip}
+palette = 9={color9.strip}
+palette = 10={color10.strip}
+palette = 11={color11.strip}
+palette = 12={color12.strip}
+palette = 13={color13.strip}
+palette = 14={color14.strip}
+palette = 15={color15.strip}
+
+# Link colors
+link-color = {color4.strip}
+
+# Tab bar colors
+tab-bar-background = {background.strip}
+tab-bar-inactive-background = {color8.strip}
+tab-bar-inactive-foreground = {color7.strip}
+tab-bar-active-background = {color4.strip}
+tab-bar-active-foreground = {background.strip}
