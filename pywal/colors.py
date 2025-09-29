@@ -9,7 +9,7 @@ import re
 import sys
 from typing import Any, Dict, List, Optional
 
-from . import theme, util
+from . import cache, theme, util
 from .settings import CACHE_DIR, MODULE_DIR, __cache_version__
 
 
@@ -140,61 +140,72 @@ def get(
     sat: str = "",
 ) -> Dict[str, Any]:
     """Generate a palette."""
-    # home_dylan_img_jpg_backend_1.2.2.json
+    # Try advanced cache first
+    cached_colors = cache.cache_get(img, backend, light, sat)
+    if cached_colors:
+        cached_colors["alpha"] = util.Color.alpha_num
+        return cached_colors
+
+    # Fallback to old cache system for compatibility
     cache_name = cache_fname(img, backend, light, cache_dir, sat)
     cache_file = os.path.join(*cache_name)
 
     if os.path.isfile(cache_file):
         colors = theme.file(cache_file)
         colors["alpha"] = util.Color.alpha_num
-        logging.info("Found cached colorscheme.")
+        logging.info("Found legacy cached colorscheme.")
+        # Migrate to new cache system
+        cache.cache_put(img, backend, light, colors, sat)
+        return colors
 
+    # Generate new colors
+    logging.info("Generating a colorscheme.")
+    backend = get_backend(backend)
+
+    # Dynamically import the backend we want to use.
+    # This keeps the dependencies "optional".
+    fallback_backends = [
+        "wal",
+        "colorthief",
+        "fast_colorthief",
+        "haishoku",
+        "colorz",
+    ]
+    original_backend = backend
+    backend_module = None
+
+    for backend_name in [backend] + [b for b in fallback_backends if b != backend]:
+        try:
+            __import__(f"pywal.backends.{backend_name}")
+            backend_module = sys.modules[f"pywal.backends.{backend_name}"]
+
+            # Test if the backend can actually run
+            if hasattr(backend_module, "get"):
+                colors = backend_module.get(img, light)
+                backend = backend_name
+                break
+
+        except (ImportError, util.ExecutableNotFoundError, util.PywalError) as e:
+            if backend_name == original_backend:
+                logging.warning(f"Backend '{backend_name}' failed: {e}")
+            else:
+                logging.debug(f"Fallback backend '{backend_name}' failed: {e}")
+            continue
+
+    if backend_module is None or "colors" not in locals():
+        logging.error("All backends failed. Please install required dependencies.")
+        sys.exit(1)
+
+    if backend != original_backend:
+        logging.info(f"Fell back from '{original_backend}' to '{backend}' backend.")
     else:
-        logging.info("Generating a colorscheme.")
-        backend = get_backend(backend)
+        logging.info("Using %s backend.", backend)
+    colors = colors_to_dict(saturate_colors(colors, sat), img)
 
-        # Dynamically import the backend we want to use.
-        # This keeps the dependencies "optional".
-        fallback_backends = [
-            "wal",
-            "colorthief",
-            "fast_colorthief",
-            "haishoku",
-            "colorz",
-        ]
-        original_backend = backend
-        backend_module = None
-
-        for backend_name in [backend] + [b for b in fallback_backends if b != backend]:
-            try:
-                __import__(f"pywal.backends.{backend_name}")
-                backend_module = sys.modules[f"pywal.backends.{backend_name}"]
-
-                # Test if the backend can actually run
-                if hasattr(backend_module, "get"):
-                    colors = backend_module.get(img, light)
-                    backend = backend_name
-                    break
-
-            except (ImportError, util.ExecutableNotFoundError, util.PywalError) as e:
-                if backend_name == original_backend:
-                    logging.warning(f"Backend '{backend_name}' failed: {e}")
-                else:
-                    logging.debug(f"Fallback backend '{backend_name}' failed: {e}")
-                continue
-
-        if backend_module is None or "colors" not in locals():
-            logging.error("All backends failed. Please install required dependencies.")
-            sys.exit(1)
-
-        if backend != original_backend:
-            logging.info(f"Fell back from '{original_backend}' to '{backend}' backend.")
-        else:
-            logging.info("Using %s backend.", backend)
-        colors = colors_to_dict(saturate_colors(colors, sat), img)
-
-        util.save_file_json(colors, cache_file)
-        logging.info("Generation complete.")
+    # Store in both cache systems for compatibility
+    util.save_file_json(colors, cache_file)
+    cache.cache_put(img, backend, light, colors, sat)
+    logging.info("Generation complete.")
 
     return colors
 

@@ -16,6 +16,13 @@ __pycache__/*
 # Lock file (optional - remove if you want to commit it)
 uv.lock
 
+# Pre-commit cache
+.pre-commit-cache/
+
+# Build artifacts
+*.tar.gz
+nu_pywal.egg-info/
+
 # AUR/makepkg build artifacts
 src/
 pkg/
