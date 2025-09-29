@@ -109,6 +109,7 @@ nu-pywal = { workspace = true }
 [dependency-groups]
 dev = [
     "bandit>=1.7.10",
+    "isort>=5.13.2",
     "mypy>=1.14.1",
     "nu-pywal==0.9.1",
     "pytest>=8.3.5",

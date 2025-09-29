@@ -695,22 +695,27 @@ def migrate_config_cli() -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
     if not migration.needs_migration():
+        logging.info("Configuration is already up to date!")
         return 0
 
     # Create backup before migration
     backup_dir = migration.backup_config()
     if backup_dir:
-        pass
+        logging.info(f"Backup created at: {backup_dir}")
     else:
+        logging.warning("Failed to create backup. Continue migration? (y/N): ")
         if input().lower() != "y":
+            logging.info("Migration aborted.")
             return 1
 
     # Run migration
     success = migration.run_migration()
 
     if success:
+        logging.info("Configuration migration completed successfully!")
         return 0
     else:
+        logging.error("Configuration migration failed.")
         if backup_dir:
-            pass
+            logging.info(f"You can restore from backup: {backup_dir}")
         return 1

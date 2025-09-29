@@ -12,6 +12,7 @@ import logging
 import os
 import shutil
 import sqlite3
+import sys
 import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
@@ -545,15 +546,25 @@ def cache_cleanup_cli() -> int:
     """CLI command for cache cleanup."""
     cache = get_cache()
 
+    sys.stdout.write("Running cache cleanup...\n")
     removed = cache.cleanup()
 
     if removed > 0:
-        pass
+        sys.stdout.write(f"Removed {removed} old cache entries\n")
     else:
-        pass
+        sys.stdout.write("No cleanup needed\n")
 
     # Show analytics
-    cache.get_analytics()
+    stats = cache.get_analytics()
+    sys.stdout.write("\nCache Statistics:\n")
+    sys.stdout.write(f"  Total entries: {stats.total_entries}\n")
+    sys.stdout.write(f"  Total size: {stats.total_size / (1024*1024):.1f} MB\n")
+    sys.stdout.write(
+        f"  Hit rate: {stats.hit_count / max(1, stats.hit_count + stats.miss_count):.1%}\n"
+    )
+    sys.stdout.write(
+        f"  Most accessed: {stats.top_accessed[0] if stats.top_accessed else 'None'}\n"
+    )
 
     return 0
 
@@ -563,20 +574,32 @@ def cache_info_cli() -> int:
     cache = get_cache()
     stats = cache.get_analytics()
 
+    sys.stdout.write("Nu-pywal Cache Information\n")
+    sys.stdout.write("=" * 40 + "\n")
+    sys.stdout.write(f"Total entries: {stats.total_entries}\n")
+    sys.stdout.write(f"Total size: {stats.total_size / (1024*1024):.1f} MB\n")
+    sys.stdout.write(f"Cache hits: {stats.hit_count}\n")
+    sys.stdout.write(f"Cache misses: {stats.miss_count}\n")
+
     if stats.hit_count + stats.miss_count > 0:
-        stats.hit_count / (stats.hit_count + stats.miss_count)
+        hit_rate = stats.hit_count / (stats.hit_count + stats.miss_count)
+        sys.stdout.write(f"Hit rate: {hit_rate:.1%}\n")
 
     if stats.avg_access_time > 0:
-        pass
+        sys.stdout.write(f"Average access time: {stats.avg_access_time:.3f}s\n")
 
     if stats.compression_saved > 0:
-        pass
+        sys.stdout.write(
+            f"Space saved by compression: {stats.compression_saved / (1024*1024):.1f} MB\n"
+        )
 
-    for _backend, _count in stats.backend_usage.items():
-        pass
+    sys.stdout.write("\nBackend usage:\n")
+    for backend, count in stats.backend_usage.items():
+        sys.stdout.write(f"  {backend}: {count}\n")
 
     if stats.most_accessed:
-        for _key, _count in stats.most_accessed[:5]:
-            pass
+        sys.stdout.write("\nMost accessed entries:\n")
+        for key, count in stats.most_accessed[:5]:
+            sys.stdout.write(f"  {key}: {count} times\n")
 
     return 0

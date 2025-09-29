@@ -201,10 +201,10 @@ class TestCacheFunctions(unittest.TestCase):
         mock_stats.total_size = 5242880  # 5MB in bytes
         mock_cache.get_analytics.return_value = mock_stats
 
-        with patch("builtins.print") as mock_print:
+        with patch("sys.stdout.write") as mock_stdout:
             result = cache.cache_info_cli()
             self.assertEqual(result, 0)
-            mock_print.assert_called()
+            mock_stdout.assert_called()
 
     @patch("pywal.cache.get_cache")
     def test_cache_cleanup_cli(self, mock_get_cache):
@@ -217,10 +217,10 @@ class TestCacheFunctions(unittest.TestCase):
         mock_stats.total_size = 5242880
         mock_cache.get_analytics.return_value = mock_stats
 
-        with patch("builtins.print") as mock_print:
+        with patch("sys.stdout.write") as mock_stdout:
             result = cache.cache_cleanup_cli()
             self.assertEqual(result, 0)
-            mock_print.assert_called()
+            mock_stdout.assert_called()
             mock_cache.cleanup.assert_called_once()
 
     def test_cache_error_handling(self):
