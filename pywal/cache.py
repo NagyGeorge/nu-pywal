@@ -563,7 +563,7 @@ def cache_cleanup_cli() -> int:
         f"  Hit rate: {stats.hit_count / max(1, stats.hit_count + stats.miss_count):.1%}\n"
     )
     sys.stdout.write(
-        f"  Most accessed: {stats.top_accessed[0] if stats.top_accessed else 'None'}\n"
+        f"  Most accessed: {stats.most_accessed[0] if stats.most_accessed else 'None'}\n"
     )
 
     return 0

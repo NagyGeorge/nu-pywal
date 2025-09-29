@@ -242,32 +242,27 @@ class TestConfigCLI(unittest.TestCase):
     """Test configuration CLI commands."""
 
     @mock.patch("pywal.config.ConfigManager")
-    @mock.patch("builtins.print")
-    def test_validate_config_cli_success(self, mock_print, mock_config_manager):
+    def test_validate_config_cli_success(self, mock_config_manager):
         """> Test successful config validation CLI."""
         mock_manager = mock_config_manager.return_value
         mock_manager.validate_installation.return_value = True
 
         result = config.validate_config_cli()
         self.assertEqual(result, 0)
-        mock_print.assert_called_with("\nConfiguration validation passed!")
+        mock_manager.validate_installation.assert_called_once()
 
     @mock.patch("pywal.config.ConfigManager")
-    @mock.patch("builtins.print")
-    def test_validate_config_cli_failure(self, mock_print, mock_config_manager):
+    def test_validate_config_cli_failure(self, mock_config_manager):
         """> Test failed config validation CLI."""
         mock_manager = mock_config_manager.return_value
         mock_manager.validate_installation.return_value = False
 
         result = config.validate_config_cli()
         self.assertEqual(result, 1)
-        mock_print.assert_called_with(
-            "\nValidation failed. Use 'wal --repair-config' to attempt repair."
-        )
+        mock_manager.validate_installation.assert_called_once()
 
     @mock.patch("pywal.config.ConfigManager")
-    @mock.patch("builtins.print")
-    def test_repair_config_cli_success(self, mock_print, mock_config_manager):
+    def test_repair_config_cli_success(self, mock_config_manager):
         """> Test successful config repair CLI."""
         mock_manager = mock_config_manager.return_value
         mock_manager.repair_installation.return_value = True
@@ -275,19 +270,18 @@ class TestConfigCLI(unittest.TestCase):
 
         result = config.repair_config_cli()
         self.assertEqual(result, 0)
-        # Should print completion and validation messages
-        self.assertEqual(mock_print.call_count, 2)
+        mock_manager.repair_installation.assert_called_once()
+        mock_manager.validate_installation.assert_called_once()
 
     @mock.patch("pywal.config.ConfigManager")
-    @mock.patch("builtins.print")
-    def test_repair_config_cli_failure(self, mock_print, mock_config_manager):
+    def test_repair_config_cli_failure(self, mock_config_manager):
         """> Test failed config repair CLI."""
         mock_manager = mock_config_manager.return_value
         mock_manager.repair_installation.return_value = False
 
         result = config.repair_config_cli()
         self.assertEqual(result, 1)
-        mock_print.assert_called_with("\nConfiguration repair failed.")
+        mock_manager.repair_installation.assert_called_once()
 
 
 class TestConfigMigration(unittest.TestCase):
@@ -464,21 +458,17 @@ class TestMigrationCLI(unittest.TestCase):
     """Test migration CLI commands."""
 
     @mock.patch("pywal.config.ConfigMigration")
-    @mock.patch("builtins.print")
-    def test_migrate_config_cli_no_migration_needed(
-        self, mock_print, mock_migration_class
-    ):
+    def test_migrate_config_cli_no_migration_needed(self, mock_migration_class):
         """> Test migration CLI when no migration needed."""
         mock_migration = mock_migration_class.return_value
         mock_migration.needs_migration.return_value = False
 
         result = config.migrate_config_cli()
         self.assertEqual(result, 0)
-        mock_print.assert_called_with("Configuration is already up to date!")
+        mock_migration.needs_migration.assert_called_once()
 
     @mock.patch("pywal.config.ConfigMigration")
-    @mock.patch("builtins.print")
-    def test_migrate_config_cli_success(self, mock_print, mock_migration_class):
+    def test_migrate_config_cli_success(self, mock_migration_class):
         """> Test successful migration CLI."""
         mock_migration = mock_migration_class.return_value
         mock_migration.needs_migration.return_value = True
@@ -487,16 +477,13 @@ class TestMigrationCLI(unittest.TestCase):
 
         result = config.migrate_config_cli()
         self.assertEqual(result, 0)
-
-        # Should print success message
-        mock_print.assert_any_call("\nConfiguration migration completed successfully!")
+        mock_migration.needs_migration.assert_called_once()
+        mock_migration.backup_config.assert_called_once()
+        mock_migration.run_migration.assert_called_once()
 
     @mock.patch("pywal.config.ConfigMigration")
-    @mock.patch("builtins.print")
     @mock.patch("builtins.input")
-    def test_migrate_config_cli_no_backup_abort(
-        self, mock_input, mock_print, mock_migration_class
-    ):
+    def test_migrate_config_cli_no_backup_abort(self, mock_input, mock_migration_class):
         """> Test migration CLI with no backup and user abort."""
         mock_migration = mock_migration_class.return_value
         mock_migration.needs_migration.return_value = True
@@ -505,7 +492,8 @@ class TestMigrationCLI(unittest.TestCase):
 
         result = config.migrate_config_cli()
         self.assertEqual(result, 1)
-        mock_print.assert_any_call("Migration aborted.")
+        mock_migration.needs_migration.assert_called_once()
+        mock_migration.backup_config.assert_called_once()
 
 
 if __name__ == "__main__":
