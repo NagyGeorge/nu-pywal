@@ -1,7 +1,9 @@
 """Test util functions."""
 
 import os
+import tempfile
 import unittest
+from unittest import mock
 
 from pywal import util
 
@@ -38,6 +40,14 @@ class TestUtil(unittest.TestCase):
         util.save_file("Hello, world", tmp_file)
         result = os.path.isfile(tmp_file)
         self.assertTrue(result)
+
+    def test_save_file_existing_directory(self):
+        """> Ensure save_file works when directory already exists."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_file = os.path.join(tmp_dir, "test_file")
+            with mock.patch("pywal.util.create_dir", side_effect=AssertionError):
+                util.save_file("Hello, world", tmp_file)
+            self.assertTrue(os.path.isfile(tmp_file))
 
     def test_save_file_json(self):
         """> Save colors to a file."""

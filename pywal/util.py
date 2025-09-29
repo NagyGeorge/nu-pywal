@@ -159,9 +159,11 @@ def read_file_raw(input_file):
         return file.readlines()
 
 
-def save_file(data, export_file):
+def save_file(data: str, export_file: str) -> None:
     """Write data to a file."""
-    create_dir(os.path.dirname(export_file))
+    directory = os.path.dirname(export_file)
+    if directory and not os.path.exists(directory):
+        create_dir(directory)
 
     try:
         with open(export_file, "w") as file:
@@ -170,9 +172,11 @@ def save_file(data, export_file):
         logging.warning("Couldn't write to %s.", export_file)
 
 
-def save_file_json(data, export_file):
+def save_file_json(data: object, export_file: str) -> None:
     """Write data to a json file."""
-    create_dir(os.path.dirname(export_file))
+    directory = os.path.dirname(export_file)
+    if directory and not os.path.exists(directory):
+        create_dir(directory)
 
     with open(export_file, "w") as file:
         json.dump(data, file, indent=4)
