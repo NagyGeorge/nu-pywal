@@ -180,18 +180,21 @@ def parse_args_exit(parser):
         sys.exit(0)
 
 
-def parse_args(parser):
-    """Process args."""
-    args = parser.parse_args()
-
+def setup_quiet_mode(args):
+    """Configure quiet mode if requested."""
     if args.q:
         logging.getLogger().disabled = True
         sys.stdout = sys.stderr = open(os.devnull, "w")
 
+
+def setup_alpha(args):
+    """Configure alpha transparency if specified."""
     if args.a:
         util.Color.alpha_num = args.a
 
-    # Initialize colors_plain to track if we have valid input
+
+def get_colors_from_args(args, parser):
+    """Extract colors from various input sources."""
     colors_plain = None
 
     if args.i:
@@ -212,7 +215,7 @@ def parse_args(parser):
             cached_wallpaper[0], args.l, args.backend, sat=args.saturate
         )
 
-    # Check if we have valid input to work with
+    # Validate that we have valid input
     if colors_plain is None:
         if args.backend and args.backend != "list_backends":
             parser.error(
@@ -222,17 +225,28 @@ def parse_args(parser):
         else:
             parser.error("No input specified.\n-i, --theme, -R, or -w are required.")
 
+    return colors_plain
+
+
+def apply_color_modifications(colors_plain, args):
+    """Apply color modifications like custom background."""
     if args.b:
         args.b = f"#{args.b.strip('#')}"
         colors_plain["special"]["background"] = args.b
         colors_plain["colors"]["color0"] = args.b
 
+
+def handle_wallpaper_and_theme_saving(colors_plain, args):
+    """Handle wallpaper setting and theme saving."""
     if not args.n:
         wallpaper.change(colors_plain["wallpaper"])
 
     if args.p:
         theme.save(colors_plain, args.p, args.l)
 
+
+def apply_colors_and_export(colors_plain, args):
+    """Apply colors to terminals and export templates."""
     sequences.send(colors_plain, to_send=not args.s, vte_fix=args.vte)
 
     if sys.stdout.isatty():
@@ -240,6 +254,9 @@ def parse_args(parser):
 
     export.every(colors_plain)
 
+
+def handle_reloading_and_scripts(args):
+    """Handle environment reloading and external scripts."""
     if not args.e:
         reload.env(tty_reload=not args.t)
 
@@ -249,6 +266,20 @@ def parse_args(parser):
 
     if not args.e:
         reload.gtk()
+
+
+def parse_args(parser):
+    """Process args."""
+    args = parser.parse_args()
+
+    setup_quiet_mode(args)
+    setup_alpha(args)
+
+    colors_plain = get_colors_from_args(args, parser)
+    apply_color_modifications(colors_plain, args)
+    handle_wallpaper_and_theme_saving(colors_plain, args)
+    apply_colors_and_export(colors_plain, args)
+    handle_reloading_and_scripts(args)
 
 
 def main():

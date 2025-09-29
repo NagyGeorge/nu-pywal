@@ -34,12 +34,12 @@ repos:
         args: ["-c", ".bandit", "-r", "pywal/"]
         exclude: "tests/"
 
-  # Type checking (gradual adoption - temporarily disabled for commit)
+  # Type checking (gradual adoption - temporarily disabled)
   # - repo: https://github.com/pre-commit/mirrors-mypy
   #   rev: v1.13.0
   #   hooks:
   #     - id: mypy
-  #       files: ^pywal/(settings|__init__)\.py$  # Only check fully typed modules
+  #       files: ^pywal/(settings|__init__|image)\.py$  # Only check fully typed modules
   #       additional_dependencies: [types-requests]
   #       # Config comes from pyproject.toml
 
